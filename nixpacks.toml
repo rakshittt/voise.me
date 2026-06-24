@@ -1,0 +1,6 @@
+[phases.setup]
+providers = ["python"]
+nixPkgs = ["python312", "uv"]
+
+[phases.install]
+cmds = []
