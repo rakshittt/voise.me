@@ -1,0 +1,14 @@
+{
+  "name": "voise",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "pnpm@11.5.2",
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm --filter web lint"
+  },
+  "workspaces": [
+    "apps/*"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@atlaskit/avatar": "^25.15.1",
+    "@atlaskit/badge": "^18.7.1",
+    "@atlaskit/banner": "^14.1.0",
+    "@atlaskit/button": "^23.11.8",
+    "@atlaskit/css-reset": "^7.4.5",
+    "@atlaskit/heading": "^5.4.2",
+    "@atlaskit/icon": "^35.4.0",
+    "@atlaskit/icon-object": "^7.5.7",
+    "@atlaskit/icon-priority": "^6.3.3",
+    "@atlaskit/lozenge": "^13.9.0",
+    "@atlaskit/primitives": "^19.0.2",
+    "@atlaskit/progress-bar": "^4.2.0",
+    "@atlaskit/section-message": "^8.13.0",
+    "@atlaskit/spinner": "^19.1.2",
+    "@atlaskit/tag": "^14.16.0",
+    "@atlaskit/tokens": "^13.3.1",
+    "@clerk/nextjs": "^7.4.3",
+    "next": "16.2.7",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

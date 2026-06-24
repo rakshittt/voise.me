@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnpm-debug.log*
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.uv/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Build outputs
+.next/
+dist/
+build/
+*.egg-info/
+
+# Python
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Docker
+*.env.docker
+
+# Alembic
+apps/api/alembic.ini.bak
+
+# Sentry
+.sentryclirc
