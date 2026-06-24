@@ -10,5 +10,8 @@
   },
   "workspaces": [
     "apps/*"
-  ]
+  ],
+  "devDependencies": {
+    "next": "16.2.7"
+  }
 }
