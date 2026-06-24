@@ -3,6 +3,7 @@ import Link from "next/link";
 import { QuickGenerate } from "@/components/dashboard/QuickGenerate";
 import { SetupChecklist } from "@/components/dashboard/SetupChecklist";
 import { VoiceStrengthWidget } from "@/components/voice-dna/VoiceStrengthWidget";
+import { NextIdeaWidget } from "@/components/ideas/NextIdeaWidget";
 import { Lozenge } from "@/components/ui/Lozenge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import type { VoiceProfileStatus, GenerationHistoryItem } from "@/lib/types";
@@ -811,6 +812,9 @@ export default async function DashboardPage() {
 
           {/* Voice Strength - seed profiles only */}
           {profile?.profile_type === "seed" && <VoiceStrengthWidget />}
+
+          {/* Next idea recommendation — only for extracted profiles with real signal */}
+          {profile?.profile_type !== "seed" && <NextIdeaWidget />}
 
           {/* Checklist */}
           <SetupChecklist
