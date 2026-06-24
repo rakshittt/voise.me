@@ -10,8 +10,5 @@
   },
   "workspaces": [
     "apps/*"
-  ],
-  "pnpm": {
-    "onlyBuiltDependencies": ["sharp", "unrs-resolver"]
-  }
+  ]
 }
