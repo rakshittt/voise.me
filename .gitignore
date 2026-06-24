@@ -17,6 +17,7 @@ __pycache__/
 .next/
 dist/
 build/
+!apps/web/app/**/build/
 *.egg-info/
 
 # Python

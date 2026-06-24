@@ -39,8 +39,8 @@ export const apiClient = {
 // Forwards FastAPI's exact status code + body to the browser;
 // returns 503 if the backend is unreachable (ECONNREFUSED, etc.).
 async function proxyRequest(method: string, path: string, body?: unknown): Promise<Response> {
-  const token = await getAuthToken();
   try {
+    const token = await getAuthToken();
     const res = await fetch(`${API_URL}${path}`, {
       method,
       headers: {
