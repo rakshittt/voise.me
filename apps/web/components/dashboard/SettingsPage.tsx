@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { EvalScore } from "@/lib/types";
 import Heading from "@/components/ui/Heading";
@@ -90,6 +90,14 @@ async function startCheckout(plan: string) {
 }
 
 export function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsPageContent />
+    </Suspense>
+  );
+}
+
+function SettingsPageContent() {
   const searchParams = useSearchParams();
   const showUpgrade = searchParams.get("upgrade") === "true";
   const [data, setData] = useState<UserData | null>(null);
