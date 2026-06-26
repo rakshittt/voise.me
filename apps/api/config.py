@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     STRIPE_PRICE_PRO: str = ""
     STRIPE_PRICE_BETA: str = ""
 
+    REDIS_URL: str = "redis://localhost:6379/0"
+
     TRIAL_DAYS: int = 14
     APP_URL: str = "http://localhost:3000"
 

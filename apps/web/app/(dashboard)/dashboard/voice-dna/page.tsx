@@ -162,7 +162,7 @@ export default async function VoisePage() {
         </div>
       </div>
 
-      {/* Improvement banner — prompts rebuild after algorithm upgrade */}
+      {/* Improvement banner - prompts rebuild after algorithm upgrade */}
       {!isSeed && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "12px 16px", background: "var(--ds-background-discovery)", border: "1px solid var(--ds-border-discovery)", borderRadius: 8, flexWrap: "wrap" }}>
           <div>

@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth import get_current_user
 from db.session import get_session
-from models.idea_context import UserIdeaContext  # noqa: F401 — registers model for Alembic
-from models.idea_event import IdeaEvent  # noqa: F401 — registers model for Alembic
+from models.idea_context import UserIdeaContext  # noqa: F401 - registers model for Alembic
+from models.idea_event import IdeaEvent  # noqa: F401 - registers model for Alembic
 from models.user import User
 from models.voice_profile import VoiceProfile
 from schemas.ideas import (
@@ -20,6 +20,7 @@ from schemas.ideas import (
     IdeaGenerateRequest,
     IdeasResponse,
 )
+from services.cache.voice_profile_cache import get_cached_profile, set_cached_profile
 from services.generation.idea_generator import generate_ideas
 from services.ideas.candidate_generator import generate_candidates
 from services.ideas.cluster_labeller import ensure_cluster_labels
@@ -38,6 +39,15 @@ def _idea_hash(title: str, hook: str) -> str:
 
 
 async def _require_ready_profile(user_id: uuid.UUID, session: AsyncSession) -> VoiceProfile:
+    profile = await get_cached_profile(user_id)
+    if profile is not None:
+        if profile.status != "ready":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Voice profile not ready. Build your Voice DNA first.",
+            )
+        return profile
+
     result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user_id))
     profile = result.scalar_one_or_none()
     if profile is None or profile.status != "ready":
@@ -45,6 +55,7 @@ async def _require_ready_profile(user_id: uuid.UUID, session: AsyncSession) -> V
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Voice profile not ready. Build your Voice DNA first.",
         )
+    await set_cached_profile(profile)
     return profile
 
 
@@ -94,7 +105,7 @@ async def get_top_idea(
 ) -> dict:
     """Return the #1 ranked idea from the last /ideas/recommended call.
 
-    Reads only from cache — zero LLM calls, fast enough for the dashboard widget.
+    Reads only from cache - zero LLM calls, fast enough for the dashboard widget.
     Returns {idea: null} if no cached results exist yet.
     """
     try:
@@ -120,14 +131,38 @@ async def get_top_idea(
 async def get_recommended_ideas(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
+    refresh: bool = False,
 ) -> dict:
-    """Return top-5 context-grounded, ranked idea recommendations."""
+    """Return top-5 context-grounded, ranked idea recommendations.
+
+    Results are cached in the DB (24h TTL via UserIdeaContext.expires_at).
+    Pass ?refresh=true to force a rebuild even if the cache is fresh.
+    """
     try:
-        profile = await _require_ready_profile(user.id, session)
+        await _require_ready_profile(user.id, session)
     except HTTPException:
         return {"ideas": [], "ready": False}
 
+    # ── Fast path: serve from DB cache if fresh ──────────────────────────────
+    if not refresh:
+        try:
+            cache_row = await session.execute(
+                select(UserIdeaContext).where(UserIdeaContext.user_id == user.id)
+            )
+            ctx_row = cache_row.scalar_one_or_none()
+            if (
+                ctx_row is not None
+                and ctx_row.cached_ideas
+                and ctx_row.expires_at is not None
+                and ctx_row.expires_at > datetime.now(UTC)
+            ):
+                return {"ideas": ctx_row.cached_ideas, "ready": True, "from_cache": True}
+        except Exception as e:
+            logger.warning("Cache read for ideas/recommended failed, regenerating: %s", e)
+
+    # ── Slow path: run full pipeline ─────────────────────────────────────────
     try:
+        profile = await _require_ready_profile(user.id, session)
         cluster_labels = await ensure_cluster_labels(user.id, profile, session)
         ctx = await get_or_build_context(user.id, profile, user, cluster_labels, session)
 
@@ -195,7 +230,7 @@ async def generate_post_ideas(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> IdeasResponse:
-    allowed, retry_after = check_rate_limit(str(user.id), "ideas")
+    allowed, retry_after = await check_rate_limit(str(user.id), "ideas")
     if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

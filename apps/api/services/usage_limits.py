@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import func, select
@@ -5,6 +6,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.usage import Usage
 from models.user import User
+from services.cache.client import get_redis
+from services.cache.keys import usage_count_key, usage_summary_key
+
+logger = logging.getLogger(__name__)
 
 UNLIMITED = -1
 
@@ -19,6 +24,9 @@ PLAN_LIMITS: dict[str, dict[str, int]] = {
 # Trial users get Growth limits for the trial period
 TRIAL_LIMITS = PLAN_LIMITS["growth"]
 DEFAULT_LIMITS = PLAN_LIMITS["starter"]
+
+USAGE_COUNT_TTL = 7200   # 2 hours - primed from DB, covers billing windows
+USAGE_SUMMARY_TTL = 300  # 5 minutes - dashboard reads this frequently
 
 
 def is_in_trial(user: User) -> bool:
@@ -63,6 +71,21 @@ def _billing_period_start(user: User) -> datetime:
     return start
 
 
+async def _get_db_usage_count(
+    user_id, action: str, period_start: datetime, session: AsyncSession
+) -> int:
+    result = await session.execute(
+        select(func.count())
+        .select_from(Usage)
+        .where(
+            Usage.user_id == user_id,
+            Usage.action == action,
+            Usage.created_at >= period_start,
+        )
+    )
+    return int(result.scalar_one())
+
+
 async def check_usage_limit(
     user: User,
     action: str,
@@ -72,6 +95,8 @@ async def check_usage_limit(
     Returns (allowed, used, limit).
     allowed=False means the user is at or over limit.
     Trial users get Growth-tier limits for the duration of the trial.
+
+    Uses Redis as a fast counter; falls back to DB if Redis is unavailable.
     """
     if is_in_trial(user):
         limits = TRIAL_LIMITS
@@ -85,16 +110,45 @@ async def check_usage_limit(
         return True, 0, UNLIMITED
 
     period_start = _billing_period_start(user)
+    period_key = period_start.strftime("%Y%m%d")
+    cache_key = usage_count_key(user.id, action, period_key)
 
-    result = await session.execute(
-        select(func.count())
-        .select_from(Usage)
-        .where(
-            Usage.user_id == user.id,
-            Usage.action == action,
-            Usage.created_at >= period_start,
-        )
-    )
-    used = result.scalar_one()
+    redis = get_redis()
+    if redis is not None:
+        try:
+            raw = await redis.get(cache_key)
+            if raw is not None:
+                used = int(raw)
+                return used < limit, used, limit
+            # Cache miss - prime from DB and store
+            used = await _get_db_usage_count(user.id, action, period_start, session)
+            await redis.setex(cache_key, USAGE_COUNT_TTL, used)
+            return used < limit, used, limit
+        except Exception as e:
+            logger.warning("Redis usage count check failed, falling back to DB: %s", e)
 
-    return used < limit, int(used), limit
+    # Pure DB fallback
+    used = await _get_db_usage_count(user.id, action, period_start, session)
+    return used < limit, used, limit
+
+
+async def increment_usage_count(user_id, action: str, user: User) -> None:
+    """Atomically increment the Redis usage counter after a successful action.
+
+    Called from log_usage so the cache stays consistent without a DB round-trip.
+    """
+    redis = get_redis()
+    if redis is None:
+        return
+    try:
+        period_start = _billing_period_start(user)
+        period_key = period_start.strftime("%Y%m%d")
+        cache_key = usage_count_key(user_id, action, period_key)
+        exists = await redis.exists(cache_key)
+        if exists:
+            await redis.incr(cache_key)
+        # If key doesn't exist yet, it'll be primed on the next check_usage_limit call
+        # Invalidate summary cache so dashboard shows updated numbers
+        await redis.delete(usage_summary_key(user_id, period_key))
+    except Exception as e:
+        logger.warning("Redis usage increment failed: %s", e)

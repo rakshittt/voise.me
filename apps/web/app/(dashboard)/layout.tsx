@@ -1,4 +1,3 @@
-import { UserButton } from "@clerk/nextjs";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TrialBanner } from "@/components/dashboard/TrialBanner";
 import { OnboardingGuard } from "./dashboard/onboarding-guard";
@@ -17,9 +16,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <Sidebar />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", overflowY: "auto" }}>
-        {/* Mobile top bar */}
+        {/* Mobile top bar - wordmark only; user info lives in the sidebar */}
         <header
-          className="md:hidden flex items-center justify-between"
+          className="md:hidden flex items-center"
           style={{
             height: "var(--ads-topbar-height)",
             padding: "0 var(--ds-space-200)",
@@ -36,21 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           >
             Voise
           </span>
-          <UserButton />
         </header>
-
-        {/* Desktop top bar (user button only) */}
-        <div
-          className="hidden md:flex items-center justify-end"
-          style={{
-            height: "var(--ads-topbar-height)",
-            padding: "0 var(--ds-space-300)",
-            backgroundColor: "var(--ds-surface)",
-            borderBottom: "1px solid var(--ds-border)",
-          }}
-        >
-          <UserButton />
-        </div>
 
         {/* Trial banner (renders when in trial) */}
         <TrialBanner />

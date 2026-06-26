@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.user_post import UserPost
 from models.voice_profile import VoiceProfile
+from services.cache.voice_profile_cache import set_cached_profile
 from services.llm.router import llm_call
 
 logger = logging.getLogger(__name__)
@@ -83,7 +84,6 @@ async def label_clusters(
         return labels
     except Exception as e:
         logger.warning("Cluster labelling failed: %s", e)
-        # Fallback: generic labels
         return {str(i): f"Topic {i + 1}" for i in range(k)}
 
 
@@ -92,12 +92,29 @@ async def ensure_cluster_labels(
     profile: VoiceProfile,
     session: AsyncSession,
 ) -> dict[str, str]:
-    """Label clusters if not already labelled; persist labels to content_pillars."""
+    """Label clusters if not already labelled; persist labels to content_pillars.
+
+    If the profile came from Redis cache (not attached to this session), loads
+    the DB object for the write and refreshes the Redis cache afterward.
+    """
     labels = await label_clusters(user_id, profile, session)
-    if labels:
-        pillars = dict(profile.content_pillars or {})
-        if pillars.get("labels") != labels:
-            pillars["labels"] = labels
-            profile.content_pillars = pillars
-            await session.flush()
+    if not labels:
+        return labels
+
+    pillars = dict(profile.content_pillars or {})
+    if pillars.get("labels") == labels:
+        return labels
+
+    # Labels changed - must write to DB. Load the actual ORM object (the profile
+    # from cache is detached and won't be tracked by the session's unit-of-work).
+    db_result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user_id))
+    db_profile = db_result.scalar_one_or_none()
+    if db_profile is not None:
+        db_pillars = dict(db_profile.content_pillars or {})
+        db_pillars["labels"] = labels
+        db_profile.content_pillars = db_pillars
+        await session.flush()
+        # Refresh Redis cache so subsequent reads have the labels
+        await set_cached_profile(db_profile)
+
     return labels

@@ -28,6 +28,12 @@ from schemas.voice_profile import (
     VoiceProfileStatusResponse,
     VoiceStrengthResponse,
 )
+from services.cache.voice_profile_cache import (
+    get_cached_profile,
+    get_cached_status,
+    invalidate_profile_cache,
+    set_cached_profile,
+)
 from services.generation.interaction_distiller import distill_for_user_bg
 from services.rate_limiter import check_rate_limit
 from services.voice_dna.builder import MIN_POSTS, build_voice_profile, rebuild_voice_profile_from_stored
@@ -157,7 +163,7 @@ async def fetch_url_endpoint(
     Rate-limited to 10 requests per hour per user. Returns preview chunks
     without starting a profile build.
     """
-    allowed, retry_after = check_rate_limit(str(user.id), "fetch_url")
+    allowed, retry_after = await check_rate_limit(str(user.id), "fetch_url")
     if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -194,7 +200,7 @@ async def build_profile(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> dict:
-    allowed, retry_after = check_rate_limit(str(user.id), "voice_profile_build")
+    allowed, retry_after = await check_rate_limit(str(user.id), "voice_profile_build")
     if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -229,6 +235,7 @@ async def build_profile(
 
     background_tasks.add_task(build_voice_profile, user.id, request.posts)
     background_tasks.add_task(distill_for_user_bg, user.id)
+    background_tasks.add_task(invalidate_profile_cache, user.id)
 
     session.add(
         DataSource(
@@ -251,7 +258,7 @@ async def rebuild_profile(
 ) -> dict:
     """Re-run analysis on stored posts with the latest algorithms.
 
-    No re-pasting required — uses posts already in the database.
+    No re-pasting required - uses posts already in the database.
     """
     result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user.id))
     existing = result.scalar_one_or_none()
@@ -266,6 +273,7 @@ async def rebuild_profile(
             detail="A profile build is already in progress.",
         )
     background_tasks.add_task(rebuild_voice_profile_from_stored, user.id)
+    background_tasks.add_task(invalidate_profile_cache, user.id)
     return {"status": "processing", "message": "Voice DNA rebuild started"}
 
 
@@ -274,12 +282,27 @@ async def get_profile_status(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> VoiceProfileStatusResponse:
+    # Fast path: status-only cache (15s TTL, safe for 3s polling)
+    cached_status = await get_cached_status(user.id)
+    if cached_status is not None:
+        # Status cache hit - still need full profile fields for the response
+        cached_profile = await get_cached_profile(user.id)
+        if cached_profile is not None:
+            return VoiceProfileStatusResponse(
+                status=cached_profile.status,
+                confidence_level=cached_profile.confidence_level,
+                post_count=cached_profile.post_count,
+                last_built_at=cached_profile.last_built_at,
+                profile_type=cached_profile.profile_type,
+            )
+
     result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user.id))
     profile = result.scalar_one_or_none()
 
     if profile is None:
         return VoiceProfileStatusResponse(status="not_started")
 
+    await set_cached_profile(profile)
     return VoiceProfileStatusResponse(
         status=profile.status,
         confidence_level=profile.confidence_level,
@@ -294,10 +317,16 @@ async def get_profile(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> VoiceProfileResponse:
-    result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user.id))
-    profile = result.scalar_one_or_none()
+    profile = await get_cached_profile(user.id)
 
     if profile is None:
+        result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user.id))
+        profile = result.scalar_one_or_none()
+        if profile is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No voice profile found.")
+        await set_cached_profile(profile)
+
+    if not profile.hook_distribution:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No voice profile found.")
 
     return VoiceProfileResponse(

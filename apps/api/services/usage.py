@@ -17,6 +17,7 @@ async def log_usage(
     model_used: str | None = None,
     tokens_input: int = 0,
     tokens_output: int = 0,
+    user=None,  # User model - if provided, increments Redis counter to keep cache consistent
 ) -> None:
     cost = settings.calculate_cost(model_used or "", tokens_input, tokens_output)
     row = Usage(
@@ -29,3 +30,8 @@ async def log_usage(
     )
     session.add(row)
     logger.debug(f"usage logged: user={user_id} action={action} model={model_used} cost=${cost:.6f}")
+
+    if user is not None:
+        # Keep Redis counter in sync without an extra DB round-trip
+        from services.usage_limits import increment_usage_count
+        await increment_usage_count(user_id, action, user)

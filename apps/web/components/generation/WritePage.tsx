@@ -130,29 +130,19 @@ function RepurposeSidebar() {
   );
 }
 
-/* ── Tab bar ─────────────────────────────────────────────────────────────── */
+/* ── Mode toggle ─────────────────────────────────────────────────────────── */
 
 type Mode = "idea" | "repurpose";
 
-function TabBar({ active, onChange }: { active: Mode; onChange: (m: Mode) => void }) {
-  const tabs: { key: Mode; label: string; desc: string }[] = [
-    { key: "idea",      label: "New idea",         desc: "Turn a thought into a post" },
-    { key: "repurpose", label: "Repurpose content", desc: "Rewrite existing content in your voice" },
-  ];
+const MODE_TABS: { key: Mode; label: string; hint: string }[] = [
+  { key: "idea",      label: "New idea",          hint: "Describe a thought" },
+  { key: "repurpose", label: "Repurpose content",  hint: "Paste existing content" },
+];
 
+function ModeToggle({ active, onChange }: { active: Mode; onChange: (m: Mode) => void }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "var(--ds-space-050)",
-        padding: "var(--ds-space-050)",
-        backgroundColor: "var(--ds-surface-sunken)",
-        borderRadius: "var(--ds-radius-200)",
-        border: "1px solid var(--ds-border)",
-        width: "fit-content",
-      }}
-    >
-      {tabs.map((tab) => {
+    <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--ds-border)" }}>
+      {MODE_TABS.map((tab) => {
         const isActive = active === tab.key;
         return (
           <button
@@ -161,34 +151,31 @@ function TabBar({ active, onChange }: { active: Mode; onChange: (m: Mode) => voi
             onClick={() => onChange(tab.key)}
             style={{
               display: "flex",
-              flexDirection: "column",
+              alignItems: "baseline",
+              gap: "var(--ds-space-075)",
               padding: "var(--ds-space-100) var(--ds-space-200)",
-              borderRadius: "var(--ds-radius-100)",
+              background: "none",
               border: "none",
+              borderBottom: isActive ? "2px solid var(--ds-border-brand)" : "2px solid transparent",
+              marginBottom: -1,
               cursor: "pointer",
-              backgroundColor: isActive ? "var(--ds-surface)" : "transparent",
-              boxShadow: isActive ? "var(--ds-shadow-raised)" : "none",
-              transition: "all 0.15s",
-              textAlign: "left",
+              transition: "border-color 0.15s",
             }}
           >
-            <span
-              style={{
-                fontSize: "var(--ds-font-size-100)",
-                fontWeight: isActive ? "var(--ds-font-weight-semibold)" : "var(--ds-font-weight-regular)",
-                color: isActive ? "var(--ds-text)" : "var(--ds-text-subtle)",
-              }}
-            >
+            <span style={{
+              fontSize: "var(--ds-font-size-100)",
+              fontWeight: isActive ? "var(--ds-font-weight-semibold)" : "var(--ds-font-weight-regular)",
+              color: isActive ? "var(--ds-text)" : "var(--ds-text-subtle)",
+              transition: "color 0.15s",
+            }}>
               {tab.label}
             </span>
-            <span
-              style={{
-                fontSize: "var(--ds-font-size-075)",
-                color: isActive ? "var(--ds-text-subtle)" : "var(--ds-text-subtlest)",
-                marginTop: 2,
-              }}
-            >
-              {tab.desc}
+            <span style={{
+              fontSize: "var(--ds-font-size-075)",
+              color: "var(--ds-text-subtlest)",
+              display: isActive ? "inline" : "none",
+            }}>
+              - {tab.hint}
             </span>
           </button>
         );
@@ -220,20 +207,13 @@ export function WritePage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "var(--ds-space-400)" }}>
 
-      {/* Header */}
+      {/* Header + mode toggle */}
       <div>
-        <h1 style={{ margin: 0, fontSize: "var(--ds-font-size-500)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", letterSpacing: "-0.02em" }}>
+        <h1 style={{ margin: "0 0 var(--ds-space-300)", fontSize: "var(--ds-font-size-500)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", letterSpacing: "-0.02em" }}>
           Write
         </h1>
-        <p style={{ margin: "var(--ds-space-075) 0 0", fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)" }}>
-          {mode === "idea"
-            ? "Describe your idea and get 3 LinkedIn posts written in your voice, ranked by match score."
-            : "Paste any long-form content - article, transcript, or newsletter. We rewrite it as a LinkedIn post in your voice."}
-        </p>
+        <ModeToggle active={mode} onChange={switchMode} />
       </div>
-
-      {/* Tab switcher */}
-      <TabBar active={mode} onChange={switchMode} />
 
       {/* 2-col grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6" style={{ alignItems: "start" }}>

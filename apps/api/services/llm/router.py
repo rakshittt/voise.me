@@ -108,7 +108,7 @@ async def _call_anthropic(
     client = anthropic_sdk.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
 
     system_text = system or ""
-    # Claude has no response_format json_mode — instruct via system prompt when needed
+    # Claude has no response_format json_mode - instruct via system prompt when needed
     if json_mode and "JSON" not in system_text.upper():
         system_text = (system_text + "\n\nReturn ONLY valid JSON. No preamble, no explanation.").strip()
 

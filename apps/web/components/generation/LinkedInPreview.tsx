@@ -44,14 +44,30 @@ export function LinkedInAvatar({
   );
 }
 
+function relativeTime(dateStr?: string): string {
+  if (!dateStr) return "Just now";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 export function LinkedInPreview({
   content,
   editing = false,
   onContentChange,
+  createdAt,
 }: {
   content: string;
   editing?: boolean;
   onContentChange?: (v: string) => void;
+  createdAt?: string;
 }) {
   const { user } = useUser();
   const [expanded, setExpanded] = useState(false);
@@ -109,7 +125,7 @@ export function LinkedInPreview({
             {(user?.publicMetadata?.headline as string | undefined) ?? "Sharing insights on LinkedIn"}
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "var(--ds-space-075)", marginTop: 2 }}>
-            <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)" }}>Just now</span>
+            <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)" }}>{relativeTime(createdAt)}</span>
             <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-border)" }}>·</span>
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" style={{ color: "var(--ds-text-subtlest)" }}>
               <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm-.35 1.03A7 7 0 018 1c.12 0 .23 0 .35.01C7.67 1.5 7 2.84 6.56 4.5H4.27A6.99 6.99 0 017.65 1.03zM3.82 5.5H1.16A6.98 6.98 0 011 8c0 .86.15 1.69.42 2.45h2.65A14.4 14.4 0 013.5 8c0-.87.11-1.72.32-2.5zm.45 0H7.5A13.3 13.3 0 007.5 8c0 .87.1 1.72.27 2.5H4.31A13.3 13.3 0 014 8c0-.87.1-1.72.27-2.5zm4.23 0h2.95A13.3 13.3 0 019.73 8c0 .87-.1 1.72-.27 2.5H8.23A13.3 13.3 0 008.5 8c0-.87-.1-1.72-.23-2.5zm3.41 0H14.5c.21.78.32 1.63.32 2.5 0 .87-.11 1.72-.32 2.5h-2.65c.17-.78.27-1.63.27-2.5 0-.87-.1-1.72-.27-2.5zm-.26-1H9.44C9 2.84 8.33 1.5 7.65 1.03A6.99 6.99 0 0111.65 4.5zm-7.38 7H6.56C7 13.16 7.67 14.5 8.35 14.97A6.99 6.99 0 014.27 11.5zm7.46 0h-2.29C9 13.16 8.33 14.5 7.65 14.97A7 7 0 0011.73 11.5zm1.09 0h-.45A14.4 14.4 0 0112.5 10h2.08A6.99 6.99 0 0111.73 11.5z" />
@@ -215,30 +231,6 @@ export function LinkedInPreview({
         </div>
       )}
 
-      {/* Impressions footer */}
-      {!editing && (
-        <div
-          style={{
-            padding: "var(--ds-space-100) var(--ds-space-200)",
-            borderTop: `1px solid var(--ds-border)`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)", display: "flex", alignItems: "center", gap: "var(--ds-space-050)" }}>
-            <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-            </svg>
-            Impressions will show after publishing
-          </span>
-          <button
-            style={{ fontSize: "var(--ds-font-size-075)", color: "#0A66C2", fontWeight: "var(--ds-font-weight-semibold)", background: "none", border: "none", cursor: "pointer" }}
-          >
-            View analytics
-          </button>
-        </div>
-      )}
     </div>
   );
 }

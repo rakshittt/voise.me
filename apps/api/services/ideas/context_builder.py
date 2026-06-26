@@ -152,7 +152,7 @@ def _extract_expertise_topics(
         if topic:
             topics.append(topic)
 
-    # Cluster labels (only clusters with ≥3 posts — weak clusters add noise)
+    # Cluster labels (only clusters with ≥3 posts - weak clusters add noise)
     pillars = profile.content_pillars or {}
     counts = pillars.get("cluster_counts", [])
     for cid_str, label in cluster_labels.items():
@@ -189,36 +189,36 @@ async def _compute_coverage_map(
         return []
 
     cutoff = datetime.now(UTC) - timedelta(days=30)
-    entries: list[CoverageEntry] = []
 
-    for cluster_id in range(k):
-        total_result = await session.execute(
-            select(func.count(UserPost.id)).where(
-                UserPost.user_id == user_id,
-                UserPost.cluster_id == cluster_id,
-            )
+    # One query for all-time counts per cluster (replaces k sequential COUNTs)
+    total_result = await session.execute(
+        select(UserPost.cluster_id, func.count(UserPost.id).label("n"))
+        .where(UserPost.user_id == user_id, UserPost.cluster_id.is_not(None))
+        .group_by(UserPost.cluster_id)
+    )
+    totals: dict[int, int] = {row.cluster_id: row.n for row in total_result.all()}
+
+    # One query for recent counts per cluster
+    recent_result = await session.execute(
+        select(UserPost.cluster_id, func.count(UserPost.id).label("n"))
+        .where(
+            UserPost.user_id == user_id,
+            UserPost.cluster_id.is_not(None),
+            UserPost.created_at >= cutoff,
         )
-        total = total_result.scalar() or 0
+        .group_by(UserPost.cluster_id)
+    )
+    recents: dict[int, int] = {row.cluster_id: row.n for row in recent_result.all()}
 
-        recent_result = await session.execute(
-            select(func.count(UserPost.id)).where(
-                UserPost.user_id == user_id,
-                UserPost.cluster_id == cluster_id,
-                UserPost.created_at >= cutoff,
-            )
+    return [
+        CoverageEntry(
+            cluster_id=cid,
+            label=cluster_labels.get(str(cid), f"Topic {cid + 1}"),
+            post_count=totals.get(cid, 0),
+            last_30_days=recents.get(cid, 0),
         )
-        recent = recent_result.scalar() or 0
-
-        entries.append(
-            CoverageEntry(
-                cluster_id=cluster_id,
-                label=cluster_labels.get(str(cluster_id), f"Topic {cluster_id + 1}"),
-                post_count=total,
-                last_30_days=recent,
-            )
-        )
-
-    return entries
+        for cid in range(k)
+    ]
 
 
 async def _compute_resonance_signals(

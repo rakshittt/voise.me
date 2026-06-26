@@ -70,7 +70,7 @@ def _compute_sentence_length_std(posts: list[str]) -> float:
 
 
 def _compute_sentence_rhythm_stats(posts: list[str]) -> dict:
-    """Fully deterministic sentence rhythm — no LLM estimation."""
+    """Fully deterministic sentence rhythm - no LLM estimation."""
     all_lengths: list[int] = []
     for post in posts:
         sentences = [s.strip() for s in _SENTENCE_SPLIT.split(post) if s.strip()]
@@ -89,7 +89,7 @@ def _compute_sentence_rhythm_stats(posts: list[str]) -> dict:
 
 
 def _compute_paragraph_stats(posts: list[str]) -> dict:
-    """Fully deterministic paragraph structure — no LLM estimation."""
+    """Fully deterministic paragraph structure - no LLM estimation."""
     total = 0
     single_line = 0
     line_counts: list[int] = []
@@ -146,7 +146,7 @@ def _last_lines(post: str, n: int = 3) -> str:
 async def extract_hook_distribution(posts: list[str], sample: list[str] | None = None) -> dict:
     if sample is None:
         sample = _sample_posts(posts)
-    # Only send the first line of each post — that's the hook
+    # Only send the first line of each post - that's the hook
     hooks_json = json.dumps(
         [{"index": i, "hook": _first_line(p)} for i, p in enumerate(sample)],
         ensure_ascii=False,
@@ -177,12 +177,12 @@ Format: {{"classifications": ["category1", "category2", ...]}}"""
 
 
 async def extract_sentence_rhythm(posts: list[str], sample: list[str] | None = None) -> dict:
-    """Fully deterministic — no LLM call needed."""
+    """Fully deterministic - no LLM call needed."""
     return _compute_sentence_rhythm_stats(posts)
 
 
 async def extract_paragraph_structure(posts: list[str], sample: list[str] | None = None) -> dict:
-    """Fully deterministic — no LLM call needed."""
+    """Fully deterministic - no LLM call needed."""
     return _compute_paragraph_stats(posts)
 
 
@@ -243,7 +243,7 @@ Respond with ONLY valid JSON:
 async def extract_cta_style(posts: list[str], sample: list[str] | None = None) -> dict:
     if sample is None:
         sample = _sample_posts(posts)
-    # Only send the last 3 lines of each post — that's where CTAs live
+    # Only send the last 3 lines of each post - that's where CTAs live
     cta_json = json.dumps(
         [{"index": i, "ending": _last_lines(p)} for i, p in enumerate(sample)],
         ensure_ascii=False,

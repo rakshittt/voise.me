@@ -2,107 +2,11 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { VoiseLogo, VoiseMark } from "@/components/ui/VoiseLogo";
+import { MarketingNav } from "@/components/marketing/Nav";
+import { MarketingFooter } from "@/components/marketing/Footer";
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   SVG icons (20×20 viewBox, 18px render)
-───────────────────────────────────────────────────────────────────────────── */
-
-const Icon = {
-  Hook: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 3v7a4 4 0 1 1-4-4" /><path d="M10 3l2.5 2.5L10 8" />
-    </svg>
-  ),
-  Rhythm: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-      <path d="M1 10h2l2-6 3 12 3-9 2 3h6" />
-    </svg>
-  ),
-  Vocab: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="3" width="16" height="14" rx="2" /><path d="M6 7h8M6 10h5M6 13h7" />
-    </svg>
-  ),
-  Structure: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="7" height="7" rx="1.5" /><rect x="11" y="2" width="7" height="7" rx="1.5" />
-      <rect x="2" y="11" width="7" height="7" rx="1.5" /><rect x="11" y="11" width="7" height="7" rx="1.5" />
-    </svg>
-  ),
-  Para: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-      <path d="M3 5h14M3 9h10M3 13h14M3 17h8" />
-    </svg>
-  ),
-  CTA: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="10" cy="10" r="8" /><path d="M7 10h6M10 7l3 3-3 3" />
-    </svg>
-  ),
-  Brain: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 3.5C8 3.5 6 5 6 7c0 .5.1 1 .3 1.4C5.5 9 5 10 5 11c0 1.5 1 2.8 2.5 3.3V16h5v-1.7C14 13.8 15 12.5 15 11c0-1-.5-2-1.3-2.6.2-.4.3-.9.3-1.4 0-2-2-3.5-4-3.5z" />
-      <path d="M10 3.5v12.5M7.5 8.5h5M7 12.5h6" />
-    </svg>
-  ),
-  Person: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="10" cy="6" r="3" /><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6" />
-    </svg>
-  ),
-  Heart: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M10 16.5S3 12 3 7a4 4 0 0 1 7-2.6A4 4 0 0 1 17 7c0 5-7 9.5-7 9.5z" />
-    </svg>
-  ),
-  Pen: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 3l3 3-9 9H5v-3L14 3z" /><path d="M12 5l3 3" />
-    </svg>
-  ),
-  Flag: () => (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 3v14M4 3h10l-2 4 2 4H4" />
-    </svg>
-  ),
-  Check: () => (
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 6.5l3 3 6-6" />
-    </svg>
-  ),
-  Cross: () => (
-    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-      <path d="M2 2l7 7M9 2L2 9" />
-    </svg>
-  ),
-  Lightning: () => (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-      <path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" stroke="white" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  ),
-  Star: () => (
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor">
-      <path d="M6.5 1l1.4 4H12L8.5 7.5l1.4 4-3.4-2.1-3.4 2.1 1.4-4L1 5h4.1z" />
-    </svg>
-  ),
-  ChevronDown: () => (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 6l4 4 4-4" />
-    </svg>
-  ),
-  ArrowRight: () => (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 8h10M9 4l4 4-4 4" />
-    </svg>
-  ),
-};
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Reveal hook - IntersectionObserver, fires once
-───────────────────────────────────────────────────────────────────────────── */
-
-function useReveal(rootMargin = "-50px") {
+/* ── Scroll-reveal hook ─────────────────────────────────────────────────── */
+function useReveal(rootMargin = "-48px") {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -117,10 +21,21 @@ function useReveal(rootMargin = "-50px") {
   return ref;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Animated count-up number
-───────────────────────────────────────────────────────────────────────────── */
+/* Wrapper components - each owns exactly one hook call */
+function Reveal({ children, style, delay }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
+  const ref = useReveal();
+  return <div ref={ref} className="reveal" style={{ transitionDelay: delay ? `${delay}ms` : undefined, ...style }}>{children}</div>;
+}
+function RevealLeft({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  const ref = useReveal();
+  return <div ref={ref} className="reveal-left" style={style}>{children}</div>;
+}
+function RevealRight({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  const ref = useReveal();
+  return <div ref={ref} className="reveal-right" style={style}>{children}</div>;
+}
 
+/* ── Animated count-up ──────────────────────────────────────────────────── */
 function AnimatedNumber({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [value, setValue] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
@@ -133,24 +48,21 @@ function AnimatedNumber({ target, suffix = "" }: { target: number; suffix?: stri
         started.current = true;
         const start = performance.now();
         const tick = (now: number) => {
-          const t = Math.min((now - start) / 1300, 1);
+          const t = Math.min((now - start) / 1200, 1);
           setValue(Math.round((1 - Math.pow(1 - t, 3)) * target));
           if (t < 1) requestAnimationFrame(tick);
         };
         requestAnimationFrame(tick);
         obs.disconnect();
       }
-    }, { rootMargin: "-30px" });
+    }, { rootMargin: "-20px" });
     obs.observe(el);
     return () => obs.disconnect();
   }, [target]);
   return <span ref={ref}>{value}{suffix}</span>;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   FAQ accordion item
-───────────────────────────────────────────────────────────────────────────── */
-
+/* ── FAQ accordion ──────────────────────────────────────────────────────── */
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -160,291 +72,349 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     el.style.maxHeight = open ? el.scrollHeight + "px" : "0";
   }, [open]);
   return (
-    <div style={{ backgroundColor: "var(--ds-surface)", border: `1px solid ${open ? "var(--ds-border-brand)" : "var(--ds-border)"}`, borderRadius: 10, overflow: "hidden", transition: "border-color 0.2s" }}>
-      <button onClick={() => setOpen((o) => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 24px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 12 }}>
-        <span style={{ fontSize: 15, fontWeight: 600, color: "var(--ds-text)", letterSpacing: "-0.02em", lineHeight: 1.4 }}>{q}</span>
-        <span style={{ flexShrink: 0, color: "var(--ds-icon-subtle)", transition: "transform 0.3s", transform: open ? "rotate(180deg)" : "none" }}><Icon.ChevronDown /></span>
+    <div style={{ border: `1px solid ${open ? "var(--ds-border-brand)" : "var(--ds-border)"}`, borderRadius: "var(--ds-radius-200)", overflow: "hidden", transition: "border-color 0.2s" }}>
+      <button onClick={() => setOpen((o) => !o)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "none", border: "none", cursor: "pointer", textAlign: "left", gap: 16, backgroundColor: open ? "var(--ds-background-brand-subtle)" : "var(--ds-surface)" }}>
+        <span style={{ fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-semibold)", color: "var(--ds-text)", letterSpacing: "-0.01em" }}>{q}</span>
+        <span style={{ flexShrink: 0, color: "var(--ds-text-subtlest)", transition: "transform 0.3s", transform: open ? "rotate(180deg)" : "none", fontSize: 18, lineHeight: 1 }}>⌄</span>
       </button>
-      <div ref={bodyRef} className={`faq-body${open ? " open" : ""}`}>
-        <p style={{ margin: 0, padding: "0 24px 20px", fontSize: 14, color: "var(--ds-text-subtle)", lineHeight: 1.8 }}>{a}</p>
+      <div ref={bodyRef} style={{ maxHeight: 0, overflow: "hidden", transition: "max-height 0.35s cubic-bezier(0.16,1,0.3,1)" }}>
+        <p style={{ margin: 0, padding: "0 20px 18px", fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)", lineHeight: "var(--ds-line-height-400)" }}>{a}</p>
       </div>
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Score pill
-───────────────────────────────────────────────────────────────────────────── */
+/* ── Icons ──────────────────────────────────────────────────────────────── */
+const CheckIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M2 7l3 3 7-7" />
+  </svg>
+);
+const ArrowRight = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 8h10M9 4l4 4-4 4" />
+  </svg>
+);
 
-function ScorePill({ score, size = "md" }: { score: number; size?: "sm" | "md" }) {
-  const good = score >= 80, mid = score >= 60;
+
+/* ── Score ring ──────────────────────────────────────────────────────────── */
+function ScoreRing({ score, size = 96, strokeW = 8, color, track }: {
+  score: number; size?: number; strokeW?: number; color: string; track: string;
+}) {
+  const [num, setNum] = useState(0);
+  const [active, setActive] = useState(false);
+  const divRef = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+  useEffect(() => {
+    const el = divRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        setActive(true);
+        const t0 = performance.now();
+        const tick = (now: number) => {
+          const t = Math.min((now - t0) / 1500, 1);
+          setNum(Math.round((1 - Math.pow(1 - t, 3)) * score));
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        obs.disconnect();
+      }
+    }, { rootMargin: "-30px" });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [score]);
+  const r = (size - strokeW * 2) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = active ? circ * (1 - score / 100) : circ;
   return (
-    <span style={{ display: "inline-flex", alignItems: "baseline", gap: 1, background: good ? "var(--ds-background-success)" : mid ? "var(--ds-background-warning)" : "var(--ds-background-danger)", color: good ? "var(--ds-text-success)" : mid ? "var(--ds-text-warning)" : "var(--ds-text-danger)", borderRadius: 6, padding: size === "sm" ? "2px 7px" : "4px 10px", fontWeight: 700, fontSize: size === "sm" ? 11 : 13 }}>
-      {score}<span style={{ fontSize: 9, opacity: 0.8 }}>%</span>
-    </span>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Dot-grid SVG background
-───────────────────────────────────────────────────────────────────────────── */
-
-function DotGrid() {
-  return (
-    <svg aria-hidden style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0.4, pointerEvents: "none" }}>
-      <defs>
-        <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-          <circle cx="1" cy="1" r="1" fill="var(--ds-border-bold)" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#dots)" />
-    </svg>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Voice fingerprint card (hero visual)
-───────────────────────────────────────────────────────────────────────────── */
-
-const BARS = [
-  { label: "Hook style",         w: 82 },
-  { label: "Sentence rhythm",    w: 68 },
-  { label: "Vocabulary",         w: 91 },
-  { label: "Post structure",     w: 74 },
-  { label: "Paragraph breaks",   w: 87 },
-  { label: "CTA style",          w: 60 },
-  { label: "Epistemic stance",   w: 79 },
-  { label: "Self-reference",     w: 88 },
-  { label: "Emotional register", w: 72 },
-  { label: "Signature phrases",  w: 93 },
-  { label: "Belief stances",     w: 65 },
-];
-
-function VoiceFingerprint() {
-  const ref = useReveal("-20px");
-  return (
-    <div ref={ref} className="reveal float-anim" style={{ backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: 16, padding: "24px 28px", boxShadow: "var(--ds-shadow-raised)", maxWidth: 340, width: "100%" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <div>
-          <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "var(--ds-text-subtlest)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Voice fingerprint</p>
-          <p style={{ margin: "3px 0 0", fontSize: 13, fontWeight: 600, color: "var(--ds-text)" }}>Your personal profile</p>
-        </div>
-        <div style={{ backgroundColor: "var(--ds-background-success)", borderRadius: 8, padding: "6px 12px" }}>
-          <span style={{ fontSize: 20, fontWeight: 800, color: "var(--ds-text-success)", letterSpacing: "-0.04em" }}>87<span style={{ fontSize: 11, fontWeight: 600, opacity: 0.75 }}>%</span></span>
-        </div>
+    <div ref={divRef} style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} style={{ position: "absolute", inset: 0, transform: "rotate(-90deg)" }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={strokeW} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={strokeW}
+          strokeLinecap="round" strokeDasharray={`${circ}`} strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 1.5s cubic-bezier(0.16,1,0.3,1)" }} />
+      </svg>
+      <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: size * 0.22, fontWeight: 900, color, letterSpacing: "-0.04em", fontVariantNumeric: "tabular-nums" }}>
+          {num}%
+        </span>
       </div>
-      {BARS.map((b, i) => (
-        <div key={b.label} style={{ marginBottom: i < BARS.length - 1 ? 8 : 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
-            <span style={{ fontSize: 10, color: "var(--ds-text-subtle)", fontWeight: 500 }}>{b.label}</span>
-            <span style={{ fontSize: 10, color: "var(--ds-text-subtlest)", fontWeight: 600 }}>{b.w}%</span>
-          </div>
-          <div style={{ height: 4, backgroundColor: "var(--ds-background-neutral)", borderRadius: 4, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${b.w}%`, borderRadius: 4, background: b.w >= 80 ? "var(--ds-background-success-bold)" : b.w >= 65 ? "var(--ds-background-brand-bold)" : "var(--ds-background-warning-bold)", animation: `barGrow 0.8s ${i * 55}ms cubic-bezier(0.16,1,0.3,1) both` }} />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Button primitives
-───────────────────────────────────────────────────────────────────────────── */
+/* ── Hero live score ticker ──────────────────────────────────────────────── */
+function HeroLiveScore() {
+  const [v, setV] = useState(0);
+  const done = useRef(false);
+  useEffect(() => {
+    if (done.current) return;
+    done.current = true;
+    const tid = setTimeout(() => {
+      const t0 = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min((now - t0) / 2400, 1);
+        setV(Math.round((1 - Math.pow(1 - t, 3)) * 91));
+        if (t < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }, 700);
+    return () => clearTimeout(tid);
+  }, []);
+  return <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 900, color: "#4ade80" }}>{v}%</span>;
+}
 
-function PrimaryBtn({ href, children, large }: { href: string; children: React.ReactNode; large?: boolean }) {
+/* ── Testimonial marquee ─────────────────────────────────────────────────── */
+function TestimonialMarquee({ testimonials }: { testimonials: typeof TESTIMONIALS }) {
+  const doubled = [...testimonials, ...testimonials];
   return (
-    <Link href={href} className="btn-shimmer" style={{ display: "inline-flex", alignItems: "center", gap: 7, backgroundColor: "var(--ds-background-brand-bold)", color: "var(--ds-text-inverse)", padding: large ? "15px 30px" : "11px 22px", borderRadius: 8, fontSize: large ? 15 : 14, fontWeight: 600, textDecoration: "none", letterSpacing: "-0.01em" }}>
-      {children}
-    </Link>
+    <div style={{ overflow: "hidden", position: "relative" }}>
+      {/* Fade left / right edges */}
+      <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: 2, pointerEvents: "none",
+        background: "linear-gradient(90deg, var(--ds-background-default) 0%, transparent 10%, transparent 90%, var(--ds-background-default) 100%)" }} />
+      <div className="marquee-track" style={{ display: "flex", gap: 20, width: "max-content" }}>
+        {doubled.map((t, i) => (
+          <div key={i} style={{ width: 340, flexShrink: 0, backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: "var(--ds-radius-250)", padding: "24px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "flex", gap: 2 }}>
+              {Array.from({ length: 5 }).map((_, j) => <span key={j} style={{ color: "#f59e0b", fontSize: 13 }}>★</span>)}
+            </div>
+            <p style={{ margin: 0, fontSize: "var(--ds-font-size-075)", color: "var(--ds-text)", lineHeight: 1.65, flex: 1 }}>&ldquo;{t.quote}&rdquo;</p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, borderTop: "1px solid var(--ds-border)" }}>
+              <div>
+                <div style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-semibold)", color: "var(--ds-text)" }}>{t.author}</div>
+                <div style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)", marginTop: 1 }}>{t.role}</div>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: "var(--ds-font-weight-bold)", backgroundColor: "var(--ds-background-success)", color: "var(--ds-text-success)", borderRadius: "var(--ds-radius-150)", padding: "2px 9px" }}>
+                🎯 {t.score}%
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
-function GhostBtn({ href, children, inverse }: { href: string; children: React.ReactNode; inverse?: boolean }) {
-  return (
-    <Link href={href} style={{ display: "inline-flex", alignItems: "center", gap: 7, border: inverse ? "1.5px solid rgba(255,255,255,0.4)" : "1.5px solid var(--ds-border-bold)", color: inverse ? "rgba(255,255,255,0.9)" : "var(--ds-text)", padding: "11px 22px", borderRadius: 8, fontSize: 14, fontWeight: 500, textDecoration: "none", letterSpacing: "-0.01em" }}>
-      {children}
-    </Link>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Static data
-───────────────────────────────────────────────────────────────────────────── */
-
-const VOICE_DIMENSIONS = [
-  { Icon: Icon.Hook,      label: "Hook style",          desc: "How you open - story, question, bold claim, or data." },
-  { Icon: Icon.Rhythm,    label: "Sentence rhythm",     desc: "The cadence and average length of your sentences." },
-  { Icon: Icon.Vocab,     label: "Vocabulary register", desc: "Formal, casual, jargon-heavy, or plain-spoken." },
-  { Icon: Icon.Structure, label: "Post structure",      desc: "Problem→insight, story→lesson, list, how-to." },
-  { Icon: Icon.Para,      label: "Paragraph breaks",    desc: "How you control white space and reading pace." },
-  { Icon: Icon.CTA,       label: "CTA style",           desc: "How you close - question, reflection, or implicit." },
-  { Icon: Icon.Brain,     label: "Epistemic stance",    desc: "How confidently you assert vs. hedge your claims." },
-  { Icon: Icon.Person,    label: "Self-reference",      desc: "How much you draw on personal experience." },
-  { Icon: Icon.Heart,     label: "Emotional register",  desc: "Your tonal signature - warm, analytical, urgent." },
-  { Icon: Icon.Pen,       label: "Signature phrases",   desc: "Words and patterns that recur across your posts." },
-  { Icon: Icon.Flag,      label: "Belief stances",      desc: "The positions and topics you consistently own." },
-];
-
+/* ── Data ───────────────────────────────────────────────────────────────── */
 const STATS = [
-  { value: 200, suffix: "+", label: "creators in beta" },
-  { value: 11,  suffix: "",  label: "voice dimensions" },
-  { value: 87,  suffix: "%", label: "avg voice match" },
-  { value: 10,  suffix: "m", label: "avg time per post" },
+  { value: 500, suffix: "+", emoji: "👥", label: "Creators using Voise" },
+  { value: 3,   suffix: "×", emoji: "✨", label: "More accurate than generic AI" },
+  { value: 87,  suffix: "%", emoji: "🎯", label: "Avg voice match score" },
+  { value: 2,   suffix: "h", emoji: "⏱️", label: "Saved per post, per week" },
+];
+
+const PROBLEMS = [
+  {
+    icon: "🕐",
+    title: "It takes 2–3 hours per post",
+    desc: "Every time you sit down to write, you're starting from scratch. Researching, drafting, editing, second-guessing. By the time it's done, you've spent your best thinking hours on one post.",
+  },
+  {
+    icon: "🤖",
+    title: "Generic AI sounds like everyone else",
+    desc: "ChatGPT, Gemini, every AI writing tool - they're trained on the same internet. The output is averaged across millions of users. Your post ends up sounding like everyone else using the same tool.",
+  },
+  {
+    icon: "🔄",
+    title: "Consistency is the real problem",
+    desc: "You post well for two weeks, then life happens. The algorithm punishes inconsistency. Your audience drifts. And every time you restart, you're building back from zero.",
+  },
 ];
 
 const HOW_IT_WORKS = [
   {
-    n: "01", title: "Add your writing - or start fresh",
-    desc: "Paste LinkedIn posts, drop a blog URL, or upload a transcript. No writing yet? Answer 7 questions and we build your seed fingerprint from that.",
-    svg: (
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <rect width="48" height="48" rx="12" fill="var(--ds-background-brand-subtle)" />
-        <rect x="10" y="12" width="28" height="4" rx="2" fill="var(--ds-background-brand-bold)" opacity="0.3" />
-        <rect x="10" y="20" width="20" height="4" rx="2" fill="var(--ds-background-brand-bold)" opacity="0.55" />
-        <rect x="10" y="28" width="24" height="4" rx="2" fill="var(--ds-background-brand-bold)" />
-        <circle cx="36" cy="36" r="8" fill="var(--ds-background-brand-bold)" />
-        <path d="M33 36l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    n: "01",
+    emoji: "📄",
+    title: "Add your writing",
+    desc: "Paste your LinkedIn posts, drop a blog URL, or add a transcript. No posts yet? Answer 7 questions and we build your seed profile from scratch.",
+    tag: "Setup · 5 minutes",
   },
   {
-    n: "02", title: "We build your fingerprint",
-    desc: "Our model extracts 11 dimensions of how you write. This becomes your personal scoring benchmark.",
-    svg: (
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <rect width="48" height="48" rx="12" fill="var(--ds-background-discovery)" />
-        <rect x="10" y="8"  width="28" height="3" rx="1.5" fill="var(--ds-background-discovery-bold)" opacity="0.3" />
-        <rect x="10" y="14" width="20" height="3" rx="1.5" fill="var(--ds-background-discovery-bold)" opacity="0.43" />
-        <rect x="10" y="20" width="34" height="3" rx="1.5" fill="var(--ds-background-discovery-bold)" opacity="0.56" />
-        <rect x="10" y="26" width="16" height="3" rx="1.5" fill="var(--ds-background-discovery-bold)" opacity="0.69" />
-        <rect x="10" y="32" width="26" height="3" rx="1.5" fill="var(--ds-background-discovery-bold)" opacity="0.82" />
-        <rect x="10" y="38" width="22" height="3" rx="1.5" fill="var(--ds-background-discovery-bold)" opacity="0.95" />
-        <circle cx="36" cy="12" r="7" fill="var(--ds-background-discovery-bold)" />
-        <path d="M33 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    n: "02",
+    emoji: "🧬",
+    title: "We build your Voice DNA",
+    desc: "Our model analyzes your writing across multiple dimensions - hook style, sentence rhythm, vocabulary, CTA patterns, belief stances, and more. This is your personal fingerprint.",
+    tag: "Automatic",
   },
   {
-    n: "03", title: "Generate & get your score",
-    desc: "Describe an idea. Get 3 variants, each scored 0–100 against your fingerprint. Tell it why you rejected one - wrong hook, too formal - and the next session already knows.",
-    svg: (
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <rect width="48" height="48" rx="12" fill="var(--ds-background-success)" />
-        <rect x="10" y="10" width="28" height="22" rx="4" stroke="var(--ds-background-success-bold)" strokeWidth="2" fill="none" />
-        <path d="M16 20h16M16 25h10" stroke="var(--ds-background-success-bold)" strokeWidth="2" strokeLinecap="round" opacity="0.6" />
-        <circle cx="36" cy="36" r="8" fill="var(--ds-background-success-bold)" />
-        <text x="36" y="40" textAnchor="middle" fill="white" fontSize="9" fontWeight="700">87</text>
-      </svg>
-    ),
+    n: "03",
+    emoji: "⚡",
+    title: "Generate & score",
+    desc: "Describe your idea. Get 3 post variants, each scored 0–100 against your Voice DNA. Pick the one above 85%. Or refine it - tell the AI what's wrong and the next version adapts.",
+    tag: "Per post · ~3 minutes",
+  },
+  {
+    n: "04",
+    emoji: "🚀",
+    title: "Publish with confidence",
+    desc: "When the score hits your threshold, it genuinely sounds like you. Copy it out. Post it yourself. Your audience grows because the voice they followed is consistent.",
+    tag: "You're in control",
+  },
+];
+
+const FEATURES = [
+  {
+    emoji: "🧬",
+    title: "Voice DNA - Your personal fingerprint",
+    desc: "We map the dimensions of how you write: hook style, sentence rhythm, vocabulary register, post structure, paragraph breaks, CTA style, epistemic stance, self-reference, emotional register, signature phrases, and belief stances. No other tool goes this deep.",
+    tag: "Core feature",
+  },
+  {
+    emoji: "🎯",
+    title: "Voice Match Score - 0 to 100 on every draft",
+    desc: "Every generated post is scored against your fingerprint before you see it. Above 85 means it genuinely sounds like you. Below 60 means it doesn't - regenerate or refine. The score removes the guesswork.",
+    tag: "Scoring engine",
+  },
+  {
+    emoji: "💡",
+    title: "Idea Recommendations - Based on your patterns",
+    desc: "When you're stuck on what to write about, Voise surfaces ideas grounded in your existing content, your proven topics, and your voice style. Every suggestion is already calibrated for your audience.",
+    tag: "Inspiration",
+  },
+  {
+    emoji: "💬",
+    title: "Refine with AI - Real-time feedback loop",
+    desc: "Tell the AI what's wrong with a draft: 'hook is too generic', 'too long', 'add a story'. The next variant incorporates your feedback - in the same session. Quick chips make it one click for common refinements.",
+    tag: "Iterative writing",
+  },
+  {
+    emoji: "📊",
+    title: "History & Trend - Watch your score improve",
+    desc: "Every post you generate is saved and searchable. Voise tracks your average voice match score over time. The copy-without-edit rate improves as the model learns your feedback patterns session by session.",
+    tag: "Progress tracking",
+  },
+];
+
+const FOR_WHO = [
+  {
+    emoji: "🏗️",
+    title: "SaaS founders",
+    desc: "Build a personal brand that attracts talent and customers - without spending your best thinking hours on LinkedIn copy.",
+  },
+  {
+    emoji: "💼",
+    title: "B2B consultants",
+    desc: "Your insights are your product. Voise helps you package them consistently without losing the voice that clients hired you for.",
+  },
+  {
+    emoji: "🎙️",
+    title: "Executive coaches",
+    desc: "You help people find their voice. Voise makes sure yours never gets diluted by generic AI on the way to the publish button.",
+  },
+  {
+    emoji: "⚡",
+    title: "Agency founders",
+    desc: "Post consistently while running a team. Describe the idea in 30 seconds, get a scored draft in 2 minutes. Stay visible.",
   },
 ];
 
 const TESTIMONIALS = [
-  { quote: "I spent two hours on every LinkedIn post. With Voise I do it in ten minutes - and my team keeps asking if I hired a ghostwriter. I didn't. It just sounds like me.", author: "Marcus T.", role: "SaaS founder, 12k followers", initials: "MT", score: 91 },
-  { quote: "The voice match score changed everything. I stopped hitting publish at 60% and kept regenerating until it hit 85+. My engagement rate doubled in six weeks.", author: "Priya S.", role: "B2B consultant, 8k followers", initials: "PS", score: 88 },
-  { quote: "I'd tried every AI writing tool. They all sound the same. Voise is the first one that actually figured out how I write. The score is proof.", author: "James K.", role: "Executive coach, 22k followers", initials: "JK", score: 93 },
-];
-
-const PRICING = [
-  { name: "Starter", price: "Free", period: "",    highlight: false, cta: "Start for free",           href: "/sign-up", desc: "Build your fingerprint and generate your first posts.",   features: ["Full 11-dimension Voice DNA", "20 generations / month", "5 repurposes / month", "Voice match score on every post"] },
-  { name: "Growth",  price: "$79",  period: "/mo", highlight: true,  cta: "Start 14-day free trial", href: "/sign-up", desc: "For professionals publishing consistently. No limits.",     features: ["Everything in Starter", "Unlimited generations", "Unlimited repurposes", "Algorithm signal checker", "Priority support"] },
-  { name: "Pro",     price: "$199", period: "/mo", highlight: false, cta: "Start 14-day free trial", href: "/sign-up", desc: "For thought leaders who rely on LinkedIn every day.",       features: ["Everything in Growth", "Early access to features", "Dedicated onboarding call"] },
+  {
+    quote: "I used to spend two hours per post. Now I describe the idea, get three variants with scores, pick the one above 85%, and I'm done in ten minutes. My team thinks I hired a ghostwriter.",
+    author: "Marcus T.",
+    role: "SaaS founder · 12k followers",
+    score: 91,
+  },
+  {
+    quote: "The score changed how I work. I stopped hitting publish at 60% and kept regenerating until I hit 85+. Engagement doubled in six weeks. The number makes it objective.",
+    author: "Priya S.",
+    role: "B2B consultant · 8k followers",
+    score: 88,
+  },
+  {
+    quote: "Every other tool sounds the same no matter who uses it. Voise is the first one that actually figured out how I write. There's a measurable difference and the score proves it.",
+    author: "James K.",
+    role: "Executive coach · 22k followers",
+    score: 93,
+  },
 ];
 
 const FAQS = [
-  { q: "Won't the output still sound like AI?",          a: "Most AI tools write from generic patterns. Voise is trained on YOUR posts - your specific hooks, sentence rhythm, vocabulary. The score tells you how close the match is. When it hits 85+, readers can't tell. And the system keeps learning: the more you use it, the sharper the match becomes." },
-  { q: "What if I don't have many LinkedIn posts?",      a: "If you have 15+ posts, we build your fingerprint directly from those. No writing at all? Answer 7 questions about how you think and write - we build your seed voice profile from that. You can layer in real writing samples later and the fingerprint improves automatically." },
-  { q: "Does Voise get more accurate over time?",     a: "Yes - this is the part most users notice first. Every time you regenerate, reject a variant, or tell the system why it was wrong, that signal feeds back into your fingerprint. Beta users typically go from a 40% copy-without-edit rate early on to over 70% after 30 posts. The system tracks this so you can watch it improve." },
-  { q: "How is this different from ChatGPT or Claude?",  a: "Those tools write generically from a prompt. Voise adds two layers on top: a scored fingerprint built from your writing, and a feedback loop that adapts to your real-time choices. Every draft is evaluated against 11 dimensions of your specific style - and you can regenerate until the score is high enough." },
-  { q: "Does Voise post to LinkedIn for me?",         a: "No. Voise generates and scores the content. You copy it, review it, and post it yourself. We deliberately don't touch your LinkedIn account - you stay in full control of what goes live. The Content Calendar inside the app lets you plan publish dates, but nothing is automated." },
-  { q: "What counts as one generation?",                 a: "Each time you submit an idea, Voise produces 3 scored variants. That counts as 1 generation. You can also regenerate individual variants - each single regeneration counts as 1." },
-];
-
-const FEEDBACK_FEATURES = [
   {
-    label: "Signal",
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <rect width="48" height="48" rx="12" fill="var(--ds-background-warning)" />
-        <path d="M15 26h4l3-8 4 16 3-10 3 6h6" stroke="var(--ds-icon-warning)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    title: "Every choice is a signal",
-    desc: "Tap 'wrong hook' or 'too formal' when you reject a variant. Copy without editing when it's right. Voise logs every signal silently in the background.",
+    q: "How is Voise different from ChatGPT or other AI writing tools?",
+    a: "ChatGPT writes from a prompt using patterns averaged across millions of users. Voise builds a private model from your specific writing, scores every generated draft against that model, and refines based on your real-time feedback. The output isn't just AI-generated text - it's text measured against your fingerprint.",
   },
   {
-    label: "Adapt",
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <rect width="48" height="48" rx="12" fill="var(--ds-background-brand-subtle)" />
-        <path d="M14 34l8-12 6 6 8-14" stroke="var(--ds-background-brand-bold)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="14" cy="34" r="2.5" fill="var(--ds-background-brand-bold)" />
-        <circle cx="36" cy="14" r="2.5" fill="var(--ds-background-brand-bold)" />
-      </svg>
-    ),
-    title: "Adapts within the session",
-    desc: "Each rejection sharpens the next variant in real time. By the third generation in a session, it has already course-corrected on rhythm, hook style, and register.",
+    q: "What if I don't have many LinkedIn posts?",
+    a: "If you have 15 or more posts, we build directly from those. If you're starting fresh, answer 7 questions about how you think and write - we build a seed profile from your responses and update it automatically as you generate and refine.",
   },
   {
-    label: "Compound",
-    icon: (
-      <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-        <rect width="48" height="48" rx="12" fill="var(--ds-background-success)" />
-        <path d="M12 36l8-14 6 8 6-10 4 6" stroke="var(--ds-background-success-bold)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M36 22v8h-8" stroke="var(--ds-background-success-bold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    title: "Compounds over time",
-    desc: "Your interaction history distills nightly into sharper fingerprint weights. The longer you use Voise, the rarer the low-score variant becomes.",
+    q: "What counts as one generation?",
+    a: "Each time you submit an idea, Voise produces 3 scored variants - that counts as 1 generation. Refining a variant in the AI chat does not count against your generation limit.",
+  },
+  {
+    q: "Can I try it before paying?",
+    a: "Yes. The Starter plan is completely free - no credit card required. You get full Voice DNA setup, 20 generations per month, and 5 repurposes. The Growth plan comes with a 14-day free trial at full access.",
+  },
+  {
+    q: "Does Voise post to LinkedIn for me?",
+    a: "No. Voise generates and scores the content. You copy it, review it, and post it yourself. You stay in full control of what goes live - we don't touch your LinkedIn account.",
   },
 ];
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Card sub-components - each gets its own reveal hook (no hooks-in-map)
-───────────────────────────────────────────────────────────────────────────── */
+/* ── Sub-components ─────────────────────────────────────────────────────── */
 
-function ProblemCard({ cls, badge, badgeBg, badgeClr, title, icon, bullets }: {
-  cls: string; badge: string; badgeBg: string; badgeClr: string;
-  title: string; icon: React.ReactNode; bullets: string[];
-}) {
+function ProblemCard({ card, delay }: { card: typeof PROBLEMS[0]; delay: number }) {
   const ref = useReveal();
   return (
-    <div ref={ref} className={`${cls} card-lift`} style={{ backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: 12, padding: "28px 24px" }}>
-      <div style={{ marginBottom: 16 }}>{icon}</div>
-      <span style={{ display: "inline-block", fontSize: 10, fontWeight: 700, color: badgeClr, background: badgeBg, borderRadius: 4, padding: "2px 8px", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 10 }}>{badge}</span>
-      <h3 style={{ fontSize: 17, fontWeight: 700, color: "var(--ds-text)", margin: "0 0 16px", letterSpacing: "-0.02em" }}>{title}</h3>
-      <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
-        {bullets.map((b) => (
-          <li key={b} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 14, color: "var(--ds-text-subtle)", lineHeight: 1.55 }}>
-            <span style={{ color: "var(--ds-icon-danger)", marginTop: 2, flexShrink: 0 }}><Icon.Cross /></span>{b}
-          </li>
-        ))}
-      </ul>
+    <div ref={ref} className="reveal" style={{ transitionDelay: `${delay}ms`, backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: "var(--ds-radius-250)", padding: "var(--ds-space-300)" }}>
+      <div style={{ fontSize: 28, marginBottom: "var(--ds-space-200)" }}>{card.icon}</div>
+      <h3 style={{ margin: "0 0 var(--ds-space-100)", fontSize: "var(--ds-font-size-300)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", letterSpacing: "-0.02em" }}>{card.title}</h3>
+      <p style={{ margin: 0, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)", lineHeight: "var(--ds-line-height-400)" }}>{card.desc}</p>
     </div>
   );
 }
 
-function StepCard({ step, delay }: { step: typeof HOW_IT_WORKS[0]; delay: number }) {
+function StepCard({ step, i }: { step: typeof HOW_IT_WORKS[0]; i: number }) {
   const ref = useReveal();
   return (
-    <div ref={ref} className="reveal card-lift" style={{ transitionDelay: `${delay}ms`, backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: 12, padding: "28px 24px" }}>
-      <div style={{ marginBottom: 20 }}>{step.svg}</div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--ds-text-subtlest)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{step.n}</div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ds-text)", margin: "0 0 10px", letterSpacing: "-0.02em" }}>{step.title}</h3>
-      <p style={{ fontSize: 14, color: "var(--ds-text-subtle)", lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
+    <div ref={ref} className="reveal" style={{ transitionDelay: `${i * 80}ms`, display: "flex", gap: "var(--ds-space-250)" }}>
+      <div style={{ flexShrink: 0 }}>
+        <div style={{ width: 44, height: 44, borderRadius: "var(--ds-radius-200)", backgroundColor: "var(--ds-background-brand-bold)", color: "var(--ds-text-inverse)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
+          {step.emoji}
+        </div>
+        {i < 3 && <div style={{ width: 1, height: 32, backgroundColor: "var(--ds-border)", margin: "8px auto 0" }} />}
+      </div>
+      <div style={{ paddingTop: 8, paddingBottom: 40 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--ds-space-100)", marginBottom: "var(--ds-space-100)" }}>
+          <span style={{ fontSize: "var(--ds-font-size-050)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-subtlest)", letterSpacing: "0.08em" }}>{step.n}</span>
+          <span style={{ display: "inline-block", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-semibold)", color: "var(--ds-text-brand)", backgroundColor: "var(--ds-background-brand-subtle)", borderRadius: "var(--ds-radius-400)", padding: "2px 10px" }}>
+            {step.tag}
+          </span>
+        </div>
+        <h3 style={{ margin: "0 0 var(--ds-space-100)", fontSize: "var(--ds-font-size-300)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", letterSpacing: "-0.02em" }}>{step.title}</h3>
+        <p style={{ margin: 0, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)", lineHeight: "var(--ds-line-height-400)", maxWidth: 440 }}>{step.desc}</p>
+      </div>
     </div>
   );
 }
 
-function FeedbackCard({ item, delay }: { item: typeof FEEDBACK_FEATURES[0]; delay: number }) {
+function FeatureCard({ feature, i }: { feature: typeof FEATURES[0]; i: number }) {
   const ref = useReveal();
   return (
-    <div ref={ref} className="reveal card-lift" style={{ transitionDelay: `${delay}ms`, backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: 12, padding: "28px 24px" }}>
-      <div style={{ marginBottom: 16 }}>{item.icon}</div>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "var(--ds-text-subtlest)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{item.label}</div>
-      <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--ds-text)", margin: "0 0 10px", letterSpacing: "-0.02em" }}>{item.title}</h3>
-      <p style={{ fontSize: 14, color: "var(--ds-text-subtle)", lineHeight: 1.7, margin: 0 }}>{item.desc}</p>
+    <div ref={ref} className="reveal card-lift" style={{ transitionDelay: `${i * 70}ms`, backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: "var(--ds-radius-250)", padding: "var(--ds-space-300)" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, backgroundColor: "var(--ds-background-brand-subtle)", borderRadius: "var(--ds-radius-200)", marginBottom: "var(--ds-space-200)", fontSize: 22 }}>
+        {feature.emoji}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ds-space-100)", marginBottom: "var(--ds-space-100)" }}>
+        <h3 style={{ margin: 0, fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", letterSpacing: "-0.01em" }}>{feature.title}</h3>
+      </div>
+      <p style={{ margin: 0, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)", lineHeight: "var(--ds-line-height-400)" }}>{feature.desc}</p>
+    </div>
+  );
+}
+
+function WhoCard({ card, delay }: { card: typeof FOR_WHO[0]; delay: number }) {
+  const ref = useReveal();
+  return (
+    <div ref={ref} className="reveal" style={{ transitionDelay: `${delay}ms`, padding: "var(--ds-space-250) var(--ds-space-300)", backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: "var(--ds-radius-250)", borderLeft: "3px solid var(--ds-border-brand)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--ds-space-150)", marginBottom: "var(--ds-space-075)" }}>
+        <span style={{ fontSize: 22 }}>{card.emoji}</span>
+        <h3 style={{ margin: 0, fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)" }}>{card.title}</h3>
+      </div>
+      <p style={{ margin: 0, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)", lineHeight: "var(--ds-line-height-300)" }}>{card.desc}</p>
     </div>
   );
 }
@@ -452,409 +422,385 @@ function FeedbackCard({ item, delay }: { item: typeof FEEDBACK_FEATURES[0]; dela
 function TestimonialCard({ t, delay }: { t: typeof TESTIMONIALS[0]; delay: number }) {
   const ref = useReveal();
   return (
-    <div ref={ref} className="reveal card-lift" style={{ transitionDelay: `${delay}ms`, backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: 12, padding: "28px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map((n) => <span key={n} style={{ color: "#f59e0b" }}><Icon.Star /></span>)}</div>
-        <ScorePill score={t.score} size="sm" />
+    <div ref={ref} className="reveal" style={{ transitionDelay: `${delay}ms`, backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: "var(--ds-radius-250)", padding: "var(--ds-space-300)", display: "flex", flexDirection: "column", gap: "var(--ds-space-200)" }}>
+      <div style={{ display: "flex", gap: 2 }} aria-label="5 stars">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <span key={i} style={{ color: "#f59e0b", fontSize: 14 }}>★</span>
+        ))}
       </div>
-      <p style={{ fontSize: 14, color: "var(--ds-text)", lineHeight: 1.75, margin: 0, flex: 1, fontStyle: "italic" }}>&ldquo;{t.quote}&rdquo;</p>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "var(--ds-background-brand-bold)", color: "var(--ds-text-inverse)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{t.initials}</div>
+      <p style={{ margin: 0, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)", lineHeight: "var(--ds-line-height-400)", flex: 1 }}>&ldquo;{t.quote}&rdquo;</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "var(--ds-space-200)", borderTop: "1px solid var(--ds-border)" }}>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ds-text)" }}>{t.author}</div>
-          <div style={{ fontSize: 12, color: "var(--ds-text-subtle)", marginTop: 2 }}>{t.role}</div>
+          <div style={{ fontSize: "var(--ds-font-size-100)", fontWeight: "var(--ds-font-weight-semibold)", color: "var(--ds-text)" }}>{t.author}</div>
+          <div style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)", marginTop: 2 }}>{t.role}</div>
         </div>
+        <span style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", backgroundColor: "var(--ds-background-success)", color: "var(--ds-text-success)", borderRadius: "var(--ds-radius-150)", padding: "3px 9px" }}>
+          🎯 {t.score}%
+        </span>
       </div>
     </div>
   );
 }
 
-function PricingCard({ plan, delay }: { plan: typeof PRICING[0]; delay: number }) {
-  const ref = useReveal();
-  return (
-    <div ref={ref} className="reveal" style={{ transitionDelay: `${delay}ms`, backgroundColor: "var(--ds-surface)", border: plan.highlight ? "2px solid var(--ds-border-brand)" : "1px solid var(--ds-border)", borderRadius: 12, padding: "32px 28px", position: "relative", boxShadow: plan.highlight ? "var(--ds-shadow-raised)" : "none" }}>
-      {plan.highlight && (
-        <div style={{ position: "absolute", top: 0, left: 28, right: 28, backgroundColor: "var(--ds-background-brand-bold)", color: "var(--ds-text-inverse)", textAlign: "center", fontSize: 10, fontWeight: 700, padding: "3px 0", borderRadius: "0 0 6px 6px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Most popular</div>
-      )}
-      <div style={{ marginTop: plan.highlight ? 18 : 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ds-text-subtle)", marginBottom: 8 }}>{plan.name}</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 3, marginBottom: 8 }}>
-          <span style={{ fontSize: 38, fontWeight: 900, color: "var(--ds-text)", lineHeight: 1, letterSpacing: "-0.05em" }}>{plan.price}</span>
-          {plan.period && <span style={{ color: "var(--ds-text-subtle)", fontSize: 14 }}>{plan.period}</span>}
-        </div>
-        <p style={{ color: "var(--ds-text-subtle)", fontSize: 13, margin: "0 0 20px", lineHeight: 1.55 }}>{plan.desc}</p>
-        <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 10 }}>
-          {plan.features.map((f) => (
-            <li key={f} style={{ fontSize: 14, color: "var(--ds-text)", display: "flex", alignItems: "flex-start", gap: 8, lineHeight: 1.4 }}>
-              <span style={{ color: "var(--ds-icon-success)", flexShrink: 0, marginTop: 2 }}><Icon.Check /></span>{f}
-            </li>
-          ))}
-        </ul>
-        <Link href={plan.href} className={plan.highlight ? "btn-shimmer" : ""} style={{ display: "block", textAlign: "center", padding: "11px 20px", borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: "none", letterSpacing: "-0.01em", backgroundColor: plan.highlight ? "var(--ds-background-brand-bold)" : "transparent", color: plan.highlight ? "var(--ds-text-inverse)" : "var(--ds-text-brand)", border: plan.highlight ? "none" : "1.5px solid var(--ds-border-brand)" }}>
-          {plan.cta}
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function BadScoreCard() {
-  const ref = useReveal();
-  return (
-    <div ref={ref} className="reveal-left card-lift" style={{ backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: 12, overflow: "hidden" }}>
-      <div style={{ padding: "12px 20px", backgroundColor: "var(--ds-background-danger)", borderBottom: "1px solid var(--ds-border)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--ds-text-danger)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Generic AI output</span>
-        <ScorePill score={34} size="sm" />
-      </div>
-      <div style={{ padding: 20 }}>
-        <p style={{ fontSize: 14, color: "var(--ds-text)", lineHeight: 1.75, margin: "0 0 16px" }}>
-          In today&apos;s fast-paced digital landscape, it&apos;s more important than ever to leverage synergies and drive impactful outcomes aligned with your core value proposition.<br /><br />
-          As thought leaders, we must embrace innovation to unlock exponential growth. Are you ready to level up? 👇
-        </p>
-        <div style={{ padding: "10px 14px", backgroundColor: "var(--ds-background-danger)", borderRadius: 8, display: "flex", gap: 8, alignItems: "flex-start" }}>
-          <span style={{ color: "var(--ds-icon-danger)", flexShrink: 0, marginTop: 1 }}><Icon.Cross /></span>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--ds-text-danger)", fontWeight: 500, lineHeight: 1.5 }}>34% match - Hook, vocabulary, and sentence rhythm all wrong. Don&apos;t publish.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function GoodScoreCard() {
-  const ref = useReveal();
-  return (
-    <div ref={ref} className="reveal-right card-lift" style={{ backgroundColor: "var(--ds-surface)", border: "2px solid var(--ds-border-success)", borderRadius: 12, overflow: "hidden" }}>
-      <div style={{ padding: "12px 20px", backgroundColor: "var(--ds-background-success)", borderBottom: "1px solid var(--ds-border-success)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--ds-text-success)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Voise output</span>
-        <ScorePill score={91} size="sm" />
-      </div>
-      <div style={{ padding: 20 }}>
-        <p style={{ fontSize: 14, color: "var(--ds-text)", lineHeight: 1.75, margin: "0 0 16px" }}>
-          The biggest mistake I see founders make on LinkedIn isn&apos;t posting too little.<br /><br />
-          It&apos;s posting what they think their audience wants to hear.<br /><br />
-          Your real insights are already there - in your Slack messages, your client calls, your 2am thoughts. You just need a way to get them out consistently.<br /><br />
-          What&apos;s the last thing you said out loud that you haven&apos;t written about yet?
-        </p>
-        <div style={{ padding: "10px 14px", backgroundColor: "var(--ds-background-success)", borderRadius: 8, display: "flex", gap: 8, alignItems: "flex-start" }}>
-          <span style={{ color: "var(--ds-icon-success)", flexShrink: 0, marginTop: 1 }}><Icon.Check /></span>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--ds-text-success)", fontWeight: 500, lineHeight: 1.5 }}>91% match - Hook, rhythm, vocabulary, and CTA all match your pattern. Ready to publish.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Reveal wrappers (avoid hooks-in-map by using wrapper components)
-───────────────────────────────────────────────────────────────────────────── */
-
-function Reveal({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  const ref = useReveal();
-  return <div ref={ref} className="reveal" style={style}>{children}</div>;
-}
-
-function RevealLeft({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  const ref = useReveal();
-  return <div ref={ref} className="reveal-left" style={style}>{children}</div>;
-}
-
-function RevealRight({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  const ref = useReveal();
-  return <div ref={ref} className="reveal-right" style={style}>{children}</div>;
-}
-
-function RevealFAQ({ children }: { children: React.ReactNode }) {
-  const ref = useReveal();
-  return <div ref={ref} className="reveal" style={{ display: "flex", flexDirection: "column", gap: 8 }}>{children}</div>;
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Page
-───────────────────────────────────────────────────────────────────────────── */
-
+/* ── Page ───────────────────────────────────────────────────────────────── */
 export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => setMounted(true), []);
 
   return (
-    <div style={{ backgroundColor: "var(--ds-background-default)", minHeight: "100vh", overflowX: "hidden" }}>
+    <div style={{ backgroundColor: "var(--ds-background-default)", minHeight: "100vh" }}>
+      <MarketingNav />
 
-      {/* ── Nav ──────────────────────────────────────────────────────────── */}
-      <nav style={{ borderBottom: "1px solid var(--ds-border)", backgroundColor: "rgba(255,255,255,0.88)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px" }}>
-          <VoiseLogo markSize={26} fontSize={15} fontWeight={800} letterSpacing="-0.03em" gap={8} />
-          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <Link href="/audit"   className="hidden sm:block" style={{ color: "var(--ds-text-subtle)", fontSize: 14, fontWeight: 500, padding: "6px 12px", borderRadius: 6, textDecoration: "none" }}>Free audit</Link>
-            <Link href="/sign-in" className="hidden sm:block" style={{ color: "var(--ds-text-subtle)", fontSize: 14, fontWeight: 500, padding: "6px 12px", borderRadius: 6, textDecoration: "none" }}>Sign in</Link>
-            <Link href="/sign-up" className="btn-shimmer" style={{ backgroundColor: "var(--ds-background-brand-bold)", color: "var(--ds-text-inverse)", fontSize: 14, fontWeight: 600, padding: "7px 16px", borderRadius: 6, textDecoration: "none", letterSpacing: "-0.01em" }}>
-              <span className="hidden sm:inline">Get started free</span>
-              <span className="sm:hidden">Start free</span>
+      {/* ── HERO ─────────────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-background-brand-bold)", padding: "96px 24px 104px", position: "relative", overflow: "hidden" }}>
+        {/* Grid overlay */}
+        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)", backgroundSize: "48px 48px", pointerEvents: "none" }} />
+
+        {/* Animated blobs */}
+        <div aria-hidden style={{ position: "absolute", top: "-15%", left: "0%", width: 560, height: 560, background: "radial-gradient(circle, rgba(100,160,255,0.22) 0%, transparent 70%)", animation: "blobFloat 16s ease-in-out infinite", pointerEvents: "none" }} />
+        <div aria-hidden style={{ position: "absolute", top: "10%", right: "-8%", width: 440, height: 440, background: "radial-gradient(circle, rgba(150,200,255,0.14) 0%, transparent 70%)", animation: "blobFloatB 20s ease-in-out infinite 2s", pointerEvents: "none" }} />
+        <div aria-hidden style={{ position: "absolute", bottom: "-10%", left: "30%", width: 360, height: 360, background: "radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 70%)", animation: "blobFloat 13s ease-in-out infinite 4s", pointerEvents: "none" }} />
+
+        {/* Central radial glow */}
+        <div aria-hidden style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 700, height: 500, background: "radial-gradient(ellipse, rgba(255,255,255,0.06) 0%, transparent 65%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center", position: "relative" }}>
+          {/* Eyebrow */}
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 32, backgroundColor: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "var(--ds-radius-400)", padding: "5px 14px 5px 8px", animation: mounted ? "fadeInUp 0.4s both" : "none" }}>
+            <span style={{ backgroundColor: "rgba(255,255,255,0.2)", color: "var(--ds-text-inverse)", fontSize: "var(--ds-font-size-050)", fontWeight: "var(--ds-font-weight-bold)", padding: "2px 8px", borderRadius: "var(--ds-radius-400)", letterSpacing: "0.08em", textTransform: "uppercase" }}>New</span>
+            <span style={{ fontSize: "var(--ds-font-size-075)", color: "rgba(255,255,255,0.8)" }}>Voice match scoring on every draft</span>
+          </div>
+
+          {/* Headline - lines stagger in */}
+          <h1 style={{ fontSize: "clamp(38px, 6.5vw, 68px)", fontWeight: 900, color: "var(--ds-text-inverse)", lineHeight: 1.04, margin: "0 0 var(--ds-space-300)", letterSpacing: "-0.04em" }}>
+            {[
+              { text: "LinkedIn posts that",   delay: "0.06s" },
+              { text: "sound unmistakably",     delay: "0.13s" },
+              { text: "like you.",              delay: "0.20s" },
+            ].map(({ text, delay }) => (
+              <span key={text} style={{ display: "block", animation: mounted ? `fadeInUp 0.55s ${delay} both` : "none" }}>
+                {text}
+              </span>
+            ))}
+          </h1>
+
+          {/* Sub */}
+          <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "rgba(255,255,255,0.75)", lineHeight: 1.75, margin: "0 auto var(--ds-space-400)", maxWidth: 520, animation: mounted ? "fadeInUp 0.5s 0.28s both" : "none" }}>
+            Voise learns your writing style and scores every generated post against your personal fingerprint. Not a guess. A number. Publish when it clears 85.
+          </p>
+
+          {/* CTAs */}
+          <div style={{ display: "flex", gap: "var(--ds-space-150)", justifyContent: "center", flexWrap: "wrap", marginBottom: "var(--ds-space-200)", animation: mounted ? "fadeInUp 0.5s 0.35s both" : "none" }}>
+            <Link href="/sign-up" className="btn-glow" style={{ display: "inline-flex", alignItems: "center", gap: "var(--ds-space-100)", backgroundColor: "var(--ds-text-inverse)", color: "var(--ds-background-brand-bold)", padding: "12px 24px", borderRadius: "var(--ds-radius-200)", fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-bold)", textDecoration: "none", letterSpacing: "-0.01em" }}>
+              Build your Voice DNA - free <ArrowRight />
+            </Link>
+            <Link href="/features" style={{ display: "inline-flex", alignItems: "center", gap: "var(--ds-space-075)", backgroundColor: "rgba(255,255,255,0.12)", color: "var(--ds-text-inverse)", border: "1px solid rgba(255,255,255,0.25)", padding: "12px 22px", borderRadius: "var(--ds-radius-200)", fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-medium)", textDecoration: "none" }}>
+              See how it works
             </Link>
           </div>
-        </div>
-      </nav>
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", overflow: "hidden", padding: "88px 24px 72px" }}>
-        <DotGrid />
-        <div aria-hidden style={{ position: "absolute", top: -100, left: "50%", transform: "translateX(-50%)", width: 700, height: 600, background: "radial-gradient(circle, rgba(0,82,204,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-        <div style={{ maxWidth: 1080, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 52, alignItems: "center", position: "relative" }}>
-          <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 24, backgroundColor: "var(--ds-background-brand-subtle)", color: "var(--ds-text-brand)", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 99, letterSpacing: "0.1em", textTransform: "uppercase", animation: mounted ? "fadeInUp 0.5s 0.05s both" : "none" }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "var(--ds-background-brand-bold)", display: "inline-block", animation: "pulseDot 2s ease-in-out infinite" }} />
-              LinkedIn AI writing
+          {/* Live score demo widget */}
+          <div style={{ animation: mounted ? "fadeInUp 0.5s 0.45s both" : "none", display: "flex", justifyContent: "center", marginBottom: "var(--ds-space-200)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, backgroundColor: "rgba(22,163,74,0.18)", border: "1px solid rgba(74,222,128,0.35)", borderRadius: "var(--ds-radius-400)", padding: "8px 18px", animation: mounted ? "floatUD 3.5s ease-in-out infinite 1.2s" : "none" }}>
+              <div style={{ width: 7, height: 7, borderRadius: "50%", backgroundColor: "#4ade80", animation: "pulseDot 2s ease-in-out infinite", flexShrink: 0 }} />
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>Voice match score</span>
+              <HeroLiveScore />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(74,222,128,0.9)", letterSpacing: "0.05em" }}>✓ READY</span>
             </div>
-
-            <h1 style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 900, color: "var(--ds-text)", lineHeight: 1.05, margin: "0 0 20px", letterSpacing: "-0.04em", animation: mounted ? "fadeInUp 0.55s 0.12s both" : "none" }}>
-              The LinkedIn AI<br />that sounds<br />
-              <span style={{ color: "var(--ds-text-brand)", position: "relative", display: "inline-block" }}>
-                exactly like you.
-                <svg aria-hidden style={{ position: "absolute", bottom: -4, left: 0, width: "100%", height: 6 }} viewBox="0 0 200 6" preserveAspectRatio="none">
-                  <path d="M0 5 Q50 0 100 4 Q150 8 200 3" stroke="var(--ds-background-brand-bold)" strokeWidth="2.5" fill="none" strokeLinecap="round"
-                    style={{ strokeDasharray: 220, strokeDashoffset: 220, animation: mounted ? "drawLine 0.9s 0.5s cubic-bezier(0.16,1,0.3,1) forwards" : "none" }} />
-                </svg>
-              </span>
-            </h1>
-
-            <p style={{ fontSize: 17, color: "var(--ds-text-subtle)", lineHeight: 1.75, maxWidth: 480, margin: "0 0 32px", animation: mounted ? "fadeInUp 0.55s 0.2s both" : "none" }}>
-              Voise learns the 11 dimensions of how you write. Every post you generate is scored against your fingerprint - and every choice you make teaches it to match your voice more precisely over time.
-            </p>
-
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20, animation: mounted ? "fadeInUp 0.55s 0.28s both" : "none" }}>
-              <PrimaryBtn href="/sign-up" large>Start free - no card required <Icon.ArrowRight /></PrimaryBtn>
-              <GhostBtn href="/audit">Audit my voice first</GhostBtn>
-            </div>
-
-            <p style={{ fontSize: 12, color: "var(--ds-text-subtlest)", margin: 0, animation: mounted ? "fadeIn 0.6s 0.4s both" : "none" }}>
-              14-day free trial · Full Growth access · Cancel any time
-            </p>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <VoiceFingerprint />
-          </div>
+          <p style={{ fontSize: "var(--ds-font-size-075)", color: "rgba(255,255,255,0.4)", animation: mounted ? "fadeIn 0.6s 0.5s both" : "none" }}>
+            No credit card · 14-day free trial on Growth · Cancel any time
+          </p>
         </div>
       </section>
 
-      {/* ── Stats bar ────────────────────────────────────────────────────── */}
-      <div style={{ borderTop: "1px solid var(--ds-border)", borderBottom: "1px solid var(--ds-border)", backgroundColor: "var(--ds-surface)", padding: "20px 24px" }}>
-        <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(24px, 6vw, 56px)", flexWrap: "wrap" }}>
+      {/* ── STATS BAR ─────────────────────────────────────────────────── */}
+      <div style={{ backgroundColor: "var(--ds-surface)", borderBottom: "1px solid var(--ds-border)", padding: "24px" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(24px, 7vw, 72px)", flexWrap: "wrap" }}>
           {STATS.map((s) => (
             <div key={s.label} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 24, fontWeight: 800, color: "var(--ds-text)", letterSpacing: "-0.04em", lineHeight: 1.1 }}>
+              <div style={{ fontSize: 18, marginBottom: 2 }}>{s.emoji}</div>
+              <div style={{ fontSize: "clamp(22px, 3vw, 30px)", fontWeight: 900, color: "var(--ds-text)", letterSpacing: "-0.04em", lineHeight: 1.1 }}>
                 <AnimatedNumber target={s.value} suffix={s.suffix} />
               </div>
-              <div style={{ fontSize: 12, color: "var(--ds-text-subtle)", marginTop: 2, fontWeight: 500 }}>{s.label}</div>
+              <div style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)", marginTop: 4, fontWeight: "var(--ds-font-weight-medium)" }}>{s.label}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── Problem ──────────────────────────────────────────────────────── */}
+      {/* ── THE PROBLEM ────────────────────────────────────────────────── */}
       <section style={{ backgroundColor: "var(--ds-surface-sunken)", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 940, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <Reveal style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>The problem</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-              You&apos;re stuck between two bad options.
+            <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>The problem</p>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: "0 0 12px", letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+              Writing LinkedIn consistently is one of the<br />hardest things you&apos;ll do as a creator.
             </h2>
-          </Reveal>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 40 }}>
-            <ProblemCard
-              cls="reveal-left"
-              badge="Option A" badgeBg="var(--ds-background-danger)" badgeClr="var(--ds-text-danger)"
-              title="Generic AI content"
-              icon={<svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="var(--ds-background-danger)" /><path d="M12 20h16M12 14h16M12 26h10" stroke="var(--ds-icon-danger)" strokeWidth="2" strokeLinecap="round" /><circle cx="28" cy="26" r="6" fill="var(--ds-background-danger-bold)" /><path d="M26 26l2 2 3-3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-              bullets={["Writes for everyone - sounds like no one", "Readers instantly spot AI-speak", "Engagement from bots, not buyers", "Your credibility takes a hit every post"]}
-            />
-            <ProblemCard
-              cls="reveal-right"
-              badge="Option B" badgeBg="var(--ds-background-warning)" badgeClr="var(--ds-text-warning)"
-              title="Writing manually"
-              icon={<svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="10" fill="var(--ds-background-warning)" /><circle cx="20" cy="20" r="9" stroke="var(--ds-icon-warning)" strokeWidth="2" fill="none" /><path d="M20 14v6l3 3" stroke="var(--ds-icon-warning)" strokeWidth="2" strokeLinecap="round" /></svg>}
-              bullets={["2–3 hours per post, every single week", "Inconsistent when life gets busy", "The blank page problem never goes away", "Posting stops the moment something urgent hits"]}
-            />
-          </div>
-
-          <Reveal>
-            <div style={{ textAlign: "center", padding: "28px 24px", backgroundColor: "var(--ds-background-brand-subtle)", borderRadius: 12, border: "1px solid var(--ds-border-brand)" }}>
-              <p style={{ fontSize: 19, fontWeight: 700, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.02em" }}>
-                There&apos;s a third option - fast <em>and</em> authentically you.
-              </p>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── 11 dimensions ────────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1040, margin: "0 auto", padding: "80px 24px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 52, alignItems: "start" }}>
-          <RevealLeft>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>How Voise works</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-              Your writing has a fingerprint.<br />We map all 11 dimensions.
-            </h2>
-            <p style={{ fontSize: 15, color: "var(--ds-text-subtle)", lineHeight: 1.75, margin: "0 0 28px" }}>
-              Generic AI tools write from averaged patterns across millions of users.
-              Voise reads only <em>your</em> writing and builds a personal model.
-              Every generated post is scored against this model - giving you a number, not a guess.
+            <p style={{ fontSize: "var(--ds-font-size-200)", color: "var(--ds-text-subtle)", margin: 0, maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>
+              Most people face three specific walls - and generic AI makes all three worse.
             </p>
-            <PrimaryBtn href="/sign-up">Build my fingerprint <Icon.ArrowRight /></PrimaryBtn>
-          </RevealLeft>
-
-          <RevealRight>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {VOICE_DIMENSIONS.map((d, i) => (
-                <div key={d.label} className="dim-card" style={{ padding: "14px", backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: 10, animation: `fadeInUp 0.4s ${i * 35}ms both` }}>
-                  <div style={{ color: "var(--ds-icon-brand)", marginBottom: 6 }}><d.Icon /></div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--ds-text)", marginBottom: 3, letterSpacing: "-0.01em" }}>{d.label}</div>
-                  <div style={{ fontSize: 11, color: "var(--ds-text-subtle)", lineHeight: 1.45 }}>{d.desc}</div>
-                </div>
-              ))}
-            </div>
-          </RevealRight>
-        </div>
-      </section>
-
-      {/* ── Score demo ───────────────────────────────────────────────────── */}
-      <section style={{ backgroundColor: "var(--ds-surface-sunken)", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 880, margin: "0 auto" }}>
-          <Reveal style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>See it in action</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-              The score tells you before you publish.
-            </h2>
-          </Reveal>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
-            <BadScoreCard />
-            <GoodScoreCard />
-          </div>
-
-          <p style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "var(--ds-text-subtlest)" }}>
-            You regenerate until the score is high enough. Most users hit 80+ on their second or third variant.
-          </p>
-        </div>
-      </section>
-
-      {/* ── How it works ─────────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 940, margin: "0 auto", padding: "80px 24px" }}>
-        <Reveal style={{ textAlign: "center", marginBottom: 52 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>Getting started</p>
-          <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-            Three steps. First post in under 5 minutes.
-          </h2>
-        </Reveal>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 24 }}>
-          {HOW_IT_WORKS.map((step, i) => <StepCard key={step.n} step={step} delay={i * 90} />)}
-        </div>
-      </section>
-
-      {/* ── Feedback loop ────────────────────────────────────────────────── */}
-      <section style={{ backgroundColor: "var(--ds-surface-sunken)", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 940, margin: "0 auto" }}>
-          <Reveal style={{ textAlign: "center", marginBottom: 52 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>The feedback loop</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: "0 0 14px", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-              The more you use it,<br />the better it knows you.
-            </h2>
-            <p style={{ fontSize: 15, color: "var(--ds-text-subtle)", margin: "0 auto", maxWidth: 520, lineHeight: 1.75 }}>
-              Most AI tools are frozen at setup. Voise has a live feedback loop - every session makes the next one sharper.
-            </p>
-          </Reveal>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 24, marginBottom: 40 }}>
-            {FEEDBACK_FEATURES.map((f, i) => <FeedbackCard key={f.label} item={f} delay={i * 90} />)}
-          </div>
-          <Reveal>
-            <div style={{ textAlign: "center", padding: "24px 28px", backgroundColor: "var(--ds-background-brand-subtle)", borderRadius: 12, border: "1px solid var(--ds-border-brand)" }}>
-              <p style={{ fontSize: 17, fontWeight: 700, color: "var(--ds-text)", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
-                Beta users go from 41% → 73% copy-without-edit rate in their first 30 posts.
-              </p>
-              <p style={{ fontSize: 13, color: "var(--ds-text-subtle)", margin: 0 }}>Voise tracks this trend so you can see your fingerprint sharpening over time.</p>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── Testimonials ─────────────────────────────────────────────────── */}
-      <section style={{ backgroundColor: "var(--ds-surface-sunken)", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 1020, margin: "0 auto" }}>
-          <Reveal style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>From beta users</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-              People who&apos;ve actually posted with it.
-            </h2>
           </Reveal>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
-            {TESTIMONIALS.map((t, i) => <TestimonialCard key={t.initials} t={t} delay={i * 75} />)}
+            {PROBLEMS.map((card, i) => <ProblemCard key={card.title} card={card} delay={i * 80} />)}
+          </div>
+          <Reveal style={{ marginTop: 32, textAlign: "center" }}>
+            <div style={{ display: "inline-block", backgroundColor: "var(--ds-background-brand-subtle)", border: "1px solid var(--ds-border-brand)", borderRadius: "var(--ds-radius-200)", padding: "16px 28px" }}>
+              <p style={{ margin: 0, fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-semibold)", color: "var(--ds-text-brand)" }}>
+                There&apos;s a third option - fast <em>and</em> unmistakably you.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ───────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-background-default)", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 64, alignItems: "start" }}>
+            <RevealLeft>
+              <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>How it works</p>
+              <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+                From idea to publish-ready in under 10 minutes.
+              </h2>
+              <p style={{ fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)", lineHeight: "var(--ds-line-height-400)", margin: "0 0 24px" }}>
+                A four-step system that builds on itself. The longer you use it, the better it knows you - and the less time each post takes.
+              </p>
+              <Link href="/features" style={{ display: "inline-flex", alignItems: "center", gap: "var(--ds-space-075)", fontSize: "var(--ds-font-size-100)", fontWeight: "var(--ds-font-weight-semibold)", color: "var(--ds-text-brand)", textDecoration: "none" }}>
+                See all features <ArrowRight />
+              </Link>
+            </RevealLeft>
+            <div>
+              {HOW_IT_WORKS.map((step, i) => <StepCard key={step.n} step={step} i={i} />)}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Pricing ──────────────────────────────────────────────────────── */}
-      <section style={{ maxWidth: 1020, margin: "0 auto", padding: "80px 24px" }}>
-        <Reveal style={{ textAlign: "center", marginBottom: 48 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>Pricing</p>
-          <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: "0 0 10px", letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-            Start free. Upgrade when you need to.
-          </h2>
-          <p style={{ fontSize: 15, color: "var(--ds-text-subtle)", margin: 0 }}>No contracts. No card to try it. Cancel any time.</p>
-        </Reveal>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(270px, 1fr))", gap: 16 }}>
-          {PRICING.map((plan, i) => <PricingCard key={plan.name} plan={plan} delay={i * 75} />)}
+      {/* ── FEATURES ───────────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-surface-sunken)", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>Features</p>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: "0 0 12px", letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+              Everything you need to publish consistently in your voice.
+            </h2>
+            <p style={{ fontSize: "var(--ds-font-size-200)", color: "var(--ds-text-subtle)", margin: 0 }}>
+              Five integrated tools. One flywheel.{" "}
+              <Link href="/features" style={{ color: "var(--ds-text-brand)", fontWeight: "var(--ds-font-weight-semibold)", textDecoration: "none" }}>See all features →</Link>
+            </p>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16 }}>
+            {FEATURES.map((feature, i) => <FeatureCard key={feature.title} feature={feature} i={i} />)}
+          </div>
         </div>
       </section>
 
-      {/* ── FAQ ──────────────────────────────────────────────────────────── */}
+      {/* ── SCORE PROOF ────────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-background-default)", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>The score in action</p>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: "0 0 12px", letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+              You know before you publish.<br />Not a feeling. A number.
+            </h2>
+            <p style={{ fontSize: "var(--ds-font-size-200)", color: "var(--ds-text-subtle)", margin: 0 }}>
+              Same idea. Two very different results.
+            </p>
+          </Reveal>
+
+          {/* Animated score rings comparison */}
+          <Reveal style={{ display: "flex", justifyContent: "center", gap: "clamp(40px, 10vw, 120px)", marginBottom: 40 }}>
+            <div style={{ textAlign: "center" }}>
+              <ScoreRing score={34} size={112} strokeW={9} color="#ae2a19" track="#ffd5d2" />
+              <p style={{ margin: "12px 0 0", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-danger)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Generic AI</p>
+              <p style={{ margin: "4px 0 0", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)" }}>Don&apos;t publish this</p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+              <div style={{ width: 1, flex: 1, backgroundColor: "var(--ds-border)" }} />
+              <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)", fontWeight: "var(--ds-font-weight-semibold)", whiteSpace: "nowrap" }}>same idea</span>
+              <div style={{ width: 1, flex: 1, backgroundColor: "var(--ds-border)" }} />
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <ScoreRing score={91} size={112} strokeW={9} color="#216e4e" track="#dcfff1" />
+              <p style={{ margin: "12px 0 0", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-success)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Voise output</p>
+              <p style={{ margin: "4px 0 0", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)" }}>Ready to publish</p>
+            </div>
+          </Reveal>
+
+          {/* Post comparison cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 16 }}>
+            <RevealLeft>
+              <div style={{ backgroundColor: "var(--ds-surface)", border: "1.5px solid var(--ds-border-danger)", borderRadius: "var(--ds-radius-250)", overflow: "hidden" }}>
+                <div style={{ backgroundColor: "var(--ds-background-danger)", borderBottom: "1px solid var(--ds-border-danger)", padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-danger)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Generic AI</span>
+                  <span style={{ color: "var(--ds-text-danger)", border: "1px solid var(--ds-border-danger)", borderRadius: "var(--ds-radius-150)", padding: "3px 9px", fontWeight: "var(--ds-font-weight-bold)", fontSize: "var(--ds-font-size-100)" }}>34% match</span>
+                </div>
+                <div style={{ padding: "var(--ds-space-250)" }}>
+                  <p style={{ fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)", lineHeight: "var(--ds-line-height-400)", margin: "0 0 var(--ds-space-200)" }}>
+                    In today&apos;s fast-paced digital landscape, it&apos;s more important than ever to leverage synergies and drive impactful outcomes aligned with your core value proposition.<br /><br />
+                    As thought leaders, we must embrace innovation to unlock exponential growth. Are you ready to level up? 👇
+                  </p>
+                  <div style={{ backgroundColor: "var(--ds-background-danger)", borderRadius: "var(--ds-radius-100)", padding: "10px 14px", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-danger)", fontWeight: "var(--ds-font-weight-semibold)" }}>
+                    Hook, vocabulary, and rhythm are all off your pattern. Don&apos;t publish this.
+                  </div>
+                </div>
+              </div>
+            </RevealLeft>
+            <RevealRight>
+              <div style={{ backgroundColor: "var(--ds-surface)", border: "1.5px solid var(--ds-border-success)", borderRadius: "var(--ds-radius-250)", overflow: "hidden" }}>
+                <div style={{ backgroundColor: "var(--ds-background-success)", borderBottom: "1px solid var(--ds-border-success)", padding: "10px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-success)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Voise output</span>
+                  <span style={{ color: "var(--ds-text-success)", border: "1px solid var(--ds-border-success)", borderRadius: "var(--ds-radius-150)", padding: "3px 9px", fontWeight: "var(--ds-font-weight-bold)", fontSize: "var(--ds-font-size-100)" }}>91% match</span>
+                </div>
+                <div style={{ padding: "var(--ds-space-250)" }}>
+                  <p style={{ fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)", lineHeight: "var(--ds-line-height-400)", margin: "0 0 var(--ds-space-200)" }}>
+                    The biggest mistake I see founders make on LinkedIn isn&apos;t posting too little.<br /><br />
+                    It&apos;s posting what they think their audience wants to hear.<br /><br />
+                    Your real insights are already there - in your Slack messages, client calls, 2am thoughts. You just need a way to get them out consistently.
+                  </p>
+                  <div style={{ backgroundColor: "var(--ds-background-success)", borderRadius: "var(--ds-radius-100)", padding: "10px 14px", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-success)", fontWeight: "var(--ds-font-weight-semibold)" }}>
+                    91% - hook, rhythm, vocabulary, and CTA all match your pattern. Ready to publish.
+                  </div>
+                </div>
+              </div>
+            </RevealRight>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHO IT'S FOR ───────────────────────────────────────────────── */}
       <section style={{ backgroundColor: "var(--ds-surface-sunken)", padding: "80px 24px" }}>
-        <div style={{ maxWidth: 660, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
           <Reveal style={{ textAlign: "center", marginBottom: 40 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>FAQ</p>
-            <h2 style={{ fontSize: "clamp(24px, 4vw, 38px)", fontWeight: 800, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.15 }}>
-              Questions worth asking.
+            <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>Who it&apos;s for</p>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+              Built for professionals where voice is the product.
             </h2>
           </Reveal>
-          <RevealFAQ>
-            {FAQS.map((f) => <FAQItem key={f.q} q={f.q} a={f.a} />)}
-          </RevealFAQ>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+            {FOR_WHO.map((card, i) => <WhoCard key={card.title} card={card} delay={i * 70} />)}
+          </div>
         </div>
       </section>
 
-      {/* ── Final CTA ────────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", overflow: "hidden", backgroundColor: "var(--ds-background-brand-bold)", padding: "96px 24px" }}>
-        <div aria-hidden style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 400, background: "radial-gradient(ellipse, rgba(255,255,255,0.09) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <Reveal style={{ maxWidth: 560, margin: "0 auto", textAlign: "center", position: "relative" }}>
-          <h2 style={{ fontSize: "clamp(28px, 4.5vw, 44px)", fontWeight: 900, color: "var(--ds-text-inverse)", margin: "0 0 16px", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
-            Your voice is your brand.<br />Stop giving it away.
+      {/* ── TESTIMONIALS ───────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-background-default)", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 1060, margin: "0 auto" }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>Real results</p>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+              From people who&apos;ve actually posted with it.
+            </h2>
+          </Reveal>
+          <TestimonialMarquee testimonials={TESTIMONIALS} />
+        </div>
+      </section>
+
+      {/* ── PRICING PREVIEW ────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-surface-sunken)", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 40 }}>
+            <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>Pricing</p>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: "0 0 10px", letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+              Start free. Upgrade when you&apos;re ready.
+            </h2>
+            <p style={{ fontSize: "var(--ds-font-size-200)", color: "var(--ds-text-subtle)", margin: 0 }}>
+              No credit card to start. No contracts.{" "}
+              <Link href="/pricing" style={{ color: "var(--ds-text-brand)", fontWeight: "var(--ds-font-weight-semibold)", textDecoration: "none" }}>See full comparison →</Link>
+            </p>
+          </Reveal>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+            {/* Starter */}
+            <Reveal>
+              <div style={{ backgroundColor: "var(--ds-surface)", border: "1px solid var(--ds-border)", borderRadius: "var(--ds-radius-250)", padding: "var(--ds-space-400)" }}>
+                <div style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-subtlest)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Starter</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 8 }}>
+                  <span style={{ fontSize: 42, fontWeight: 900, color: "var(--ds-text)", lineHeight: 1, letterSpacing: "-0.04em" }}>Free</span>
+                </div>
+                <p style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)", margin: "0 0 var(--ds-space-300)" }}>Build your Voice DNA and start generating.</p>
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 var(--ds-space-300)", display: "flex", flexDirection: "column", gap: 10 }}>
+                  {["Full Voice DNA setup", "20 generations / month", "5 repurposes / month", "Voice match score on every draft"].map((f) => (
+                    <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)" }}>
+                      <span style={{ color: "var(--ds-icon-success)", flexShrink: 0 }}><CheckIcon /></span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/sign-up" style={{ display: "block", textAlign: "center", padding: "10px", borderRadius: "var(--ds-radius-200)", border: "1.5px solid var(--ds-border-brand)", color: "var(--ds-text-brand)", fontSize: "var(--ds-font-size-100)", fontWeight: "var(--ds-font-weight-bold)", textDecoration: "none" }}>
+                  Start free
+                </Link>
+              </div>
+            </Reveal>
+            {/* Growth */}
+            <Reveal delay={80}>
+              <div style={{ backgroundColor: "var(--ds-background-brand-bold)", border: "none", borderRadius: "var(--ds-radius-250)", padding: "var(--ds-space-400)", position: "relative" }}>
+                <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", backgroundColor: "var(--ds-background-warning-bold)", color: "var(--ds-text)", fontSize: "var(--ds-font-size-050)", fontWeight: "var(--ds-font-weight-bold)", padding: "3px 12px", borderRadius: "var(--ds-radius-400)", whiteSpace: "nowrap", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+                  Most popular
+                </div>
+                <div style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Growth</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: 42, fontWeight: 900, color: "var(--ds-text-inverse)", lineHeight: 1, letterSpacing: "-0.04em" }}>$29</span>
+                  <span style={{ fontSize: "var(--ds-font-size-100)", color: "rgba(255,255,255,0.6)" }}>/mo</span>
+                </div>
+                <p style={{ fontSize: "var(--ds-font-size-075)", color: "rgba(255,255,255,0.65)", margin: "0 0 var(--ds-space-300)" }}>For professionals posting every week without exception.</p>
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 var(--ds-space-300)", display: "flex", flexDirection: "column", gap: 10 }}>
+                  {["Everything in Starter", "Unlimited generations", "Unlimited repurposes", "Idea recommendations", "Priority support"].map((f) => (
+                    <li key={f} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--ds-font-size-100)", color: "rgba(255,255,255,0.9)" }}>
+                      <span style={{ color: "rgba(255,255,255,0.8)", flexShrink: 0 }}><CheckIcon /></span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/sign-up" style={{ display: "block", textAlign: "center", padding: "10px", borderRadius: "var(--ds-radius-200)", backgroundColor: "var(--ds-text-inverse)", color: "var(--ds-background-brand-bold)", fontSize: "var(--ds-font-size-100)", fontWeight: "var(--ds-font-weight-bold)", textDecoration: "none" }}>
+                  Start 14-day free trial
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ────────────────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-background-default)", padding: "80px 24px" }}>
+        <div style={{ maxWidth: 660, margin: "0 auto" }}>
+          <Reveal style={{ textAlign: "center", marginBottom: 40 }}>
+            <p style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>FAQ</p>
+            <h2 style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 900, color: "var(--ds-text)", margin: 0, letterSpacing: "-0.03em", lineHeight: 1.12 }}>
+              Questions you probably have.
+            </h2>
+          </Reveal>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {FAQS.map((f) => <FAQItem key={f.q} q={f.q} a={f.a} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ──────────────────────────────────────────────────── */}
+      <section style={{ backgroundColor: "var(--ds-background-brand-bold)", padding: "96px 24px" }}>
+        <Reveal style={{ maxWidth: 560, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontSize: "clamp(28px, 4.5vw, 48px)", fontWeight: 900, color: "var(--ds-text-inverse)", margin: "0 0 16px", letterSpacing: "-0.04em", lineHeight: 1.06 }}>
+            Your voice is your most valuable asset on LinkedIn.<br />
+            <span style={{ opacity: 0.65, fontWeight: 400 }}>Stop diluting it.</span>
           </h2>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.72)", lineHeight: 1.8, margin: "0 0 36px" }}>
-            Build your Voice DNA today. Every post you generate will be scored against your fingerprint - so the only thing you publish is content that sounds unmistakably like you.
+          <p style={{ fontSize: "var(--ds-font-size-200)", color: "rgba(255,255,255,0.65)", margin: "0 0 36px", lineHeight: 1.7 }}>
+            Build your Voice DNA today. Every post you generate is scored against your fingerprint - the only thing you publish is content that sounds unmistakably like you.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 16 }}>
-            <Link href="/sign-up" className="btn-shimmer" style={{ display: "inline-flex", alignItems: "center", gap: 7, backgroundColor: "var(--ds-surface)", color: "var(--ds-text-brand)", padding: "14px 28px", borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: "none", letterSpacing: "-0.02em" }}>
-              Start free - no card required <Icon.ArrowRight />
+            <Link href="/sign-up" style={{ display: "inline-flex", alignItems: "center", gap: "var(--ds-space-100)", backgroundColor: "var(--ds-text-inverse)", color: "var(--ds-background-brand-bold)", padding: "13px 28px", borderRadius: "var(--ds-radius-200)", fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-bold)", textDecoration: "none" }}>
+              Build your Voice DNA - free <ArrowRight />
             </Link>
-            <GhostBtn href="/audit" inverse>Try the free voice audit</GhostBtn>
+            <Link href="/pricing" style={{ display: "inline-flex", alignItems: "center", gap: "var(--ds-space-075)", backgroundColor: "rgba(255,255,255,0.12)", color: "var(--ds-text-inverse)", border: "1px solid rgba(255,255,255,0.25)", padding: "13px 22px", borderRadius: "var(--ds-radius-200)", fontSize: "var(--ds-font-size-200)", fontWeight: "var(--ds-font-weight-medium)", textDecoration: "none" }}>
+              See pricing
+            </Link>
           </div>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", margin: 0 }}>14-day free trial · Full Growth access · Cancel any time</p>
+          <p style={{ fontSize: "var(--ds-font-size-075)", color: "rgba(255,255,255,0.4)", margin: 0 }}>
+            No credit card · 14-day trial on Growth · Cancel any time
+          </p>
         </Reveal>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: "1px solid var(--ds-border)", backgroundColor: "var(--ds-surface)", padding: "28px 24px" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <VoiseLogo markSize={22} fontSize={13} fontWeight={800} letterSpacing="-0.03em" gap={7} />
-          <div style={{ display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-            {[{ href: "/audit", l: "Free voice audit" }, { href: "/sign-up", l: "Sign up" }, { href: "/sign-in", l: "Sign in" }].map((lk) => (
-              <Link key={lk.href} href={lk.href} style={{ fontSize: 13, color: "var(--ds-text-subtle)", textDecoration: "none" }}>{lk.l}</Link>
-            ))}
-          </div>
-          <span style={{ fontSize: 12, color: "var(--ds-text-subtlest)" }}>© 2025 Voise</span>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }

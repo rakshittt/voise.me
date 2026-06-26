@@ -1,8 +1,10 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from config import settings
 from routers.account import router as account_router
 from routers.admin import router as admin_router
 from routers.audit import router as audit_router
@@ -18,11 +20,20 @@ from routers.queue import router as queue_router
 from routers.usage import router as usage_router
 from routers.voice_profile import router as voice_profile_router
 from routers.webhooks import router as webhooks_router
+from services.cache import close_redis, init_redis
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Voise API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_redis(settings.REDIS_URL)
+    yield
+    await close_redis()
+
+
+app = FastAPI(title="Voise API", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

@@ -28,6 +28,7 @@ dependencies = [
     "onnxruntime>=1.19.0",
     "optimum>=1.23.0",
     "pypdf>=4.0.0",
+    "redis[asyncio]>=5.0.0",
 ]
 
 [tool.ruff]

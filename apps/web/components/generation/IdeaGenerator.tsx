@@ -256,6 +256,7 @@ function RecommendedCard({ idea, index }: { idea: IdeaItem; index: number }) {
 function RecommendedIdeas({ onRefresh }: { onRefresh?: () => void }) {
   const [ideas, setIdeas] = useState<IdeaItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetch("/api/ideas/recommended")
@@ -268,6 +269,19 @@ function RecommendedIdeas({ onRefresh }: { onRefresh?: () => void }) {
       .catch(() => null)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetch("/api/ideas/recommended?refresh=true")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.ready && Array.isArray(data.ideas)) {
+          setIdeas(data.ideas);
+        }
+      })
+      .catch(() => null)
+      .finally(() => setRefreshing(false));
+  };
 
   if (loading) {
     return (
@@ -300,25 +314,28 @@ function RecommendedIdeas({ onRefresh }: { onRefresh?: () => void }) {
           </span>
         </div>
         <button
-          onClick={() => {
-            setLoading(true);
-            setIdeas([]);
-            fetch("/api/ideas/recommended")
-              .then((r) => r.json())
-              .then((data) => { if (data.ready) setIdeas(data.ideas ?? []); })
-              .catch(() => null)
-              .finally(() => setLoading(false));
-          }}
-          style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+          onClick={handleRefresh}
+          disabled={refreshing}
+          style={{ fontSize: "var(--ds-font-size-075)", color: refreshing ? "var(--ds-text-disabled)" : "var(--ds-text-subtlest)", background: "none", border: "none", cursor: refreshing ? "not-allowed" : "pointer", padding: 0, display: "flex", alignItems: "center", gap: 4 }}
         >
-          Refresh ↺
+          <span style={refreshing ? { display: "inline-block", animation: "spin 1s linear infinite" } : undefined}>↺</span>
+          {refreshing ? "Refreshing…" : "Refresh"}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {ideas.map((idea, i) => (
-          <RecommendedCard key={i} idea={idea} index={i} />
-        ))}
+      <div style={{ position: "relative" }}>
+        {refreshing && (
+          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(255,255,255,0.65)", borderRadius: "var(--ds-radius-200)", zIndex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)", fontWeight: "var(--ds-font-weight-semibold)", backgroundColor: "var(--ds-surface)", padding: "var(--ds-space-075) var(--ds-space-150)", borderRadius: "var(--ds-radius-100)", border: "1px solid var(--ds-border)" }}>
+              Generating fresh ideas for your voice…
+            </span>
+          </div>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" style={{ opacity: refreshing ? 0.4 : 1, transition: "opacity 0.2s" }}>
+          {ideas.map((idea, i) => (
+            <RecommendedCard key={i} idea={idea} index={i} />
+          ))}
+        </div>
       </div>
     </div>
   );

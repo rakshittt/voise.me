@@ -1,11 +1,11 @@
 """Rank idea candidates on 5 axes and return top-N.
 
 Axis weights:
-  credibility  0.30  — is this topic in the creator's expertise list?
-  novelty      0.25  — how different is this from their existing posts? (pgvector)
-  resonance    0.20  — does this format get accepted by the creator?
-  voice_fit    0.15  — does this match their dominant hook style?
-  specificity  0.10  — does the hook contain concrete details?
+  credibility  0.30  - is this topic in the creator's expertise list?
+  novelty      0.25  - how different is this from their existing posts? (pgvector)
+  resonance    0.20  - does this format get accepted by the creator?
+  voice_fit    0.15  - does this match their dominant hook style?
+  specificity  0.10  - does the hook contain concrete details?
 """
 import asyncio
 import logging
@@ -61,7 +61,7 @@ async def rank_candidates(
     try:
         hook_embeddings = await asyncio.gather(*[embed_text(h[:300]) for h in hooks])
     except Exception as e:
-        logger.warning("Embedding failed for novelty scoring: %s — skipping novelty axis", e)
+        logger.warning("Embedding failed for novelty scoring: %s - skipping novelty axis", e)
         hook_embeddings = [None] * len(candidates)
 
     # Fetch per-candidate novelty scores via pgvector
@@ -108,7 +108,7 @@ def _score_credibility(candidate: RawCandidate, expertise_topics: list[str]) -> 
         if topic in anchor or anchor in topic:
             # Position decay: rank 0 → 1.0, rank 14 → ~0.3
             return max(0.3, 1.0 - i * 0.05)
-    # Anchor not found in expertise list — still plausible, just lower score
+    # Anchor not found in expertise list - still plausible, just lower score
     return 0.2
 
 
@@ -136,48 +136,43 @@ def _score_voice_fit(candidate: RawCandidate, dominant_hook: str) -> float:
 
 # ── Novelty via pgvector ──────────────────────────────────────────────────────
 
+async def _novelty_for_one(
+    user_id: uuid.UUID,
+    emb: list[float] | None,
+    session: AsyncSession,
+) -> float:
+    if emb is None:
+        return 0.5
+    try:
+        result = await session.execute(
+            select(UserPost.content_embedding.cosine_distance(emb).label("dist"))
+            .where(UserPost.user_id == user_id, UserPost.content_embedding.is_not(None))
+            .order_by("dist")
+            .limit(1)
+        )
+        row = result.fetchone()
+        if row is None:
+            return 0.5
+        dist = float(row[0]) if row[0] is not None else 1.0
+        # cosine distance [0, 2] → novelty [0, 1]: dist≥0.5 = fully novel
+        return min(1.0, dist / 0.5)
+    except Exception as e:
+        logger.warning("Novelty pgvector query failed: %s", e)
+        return 0.5
+
+
 async def _batch_novelty_scores(
     user_id: uuid.UUID,
     embeddings: list[list[float] | None],
     session: AsyncSession,
 ) -> list[float]:
-    """
-    For each candidate embedding, find the cosine distance to the nearest
-    existing user post. Higher distance = more novel.
+    """Run all pgvector nearest-neighbour queries in parallel via asyncio.gather.
 
-    Distance range [0, 2] → map to novelty score [0, 1].
-    If embedding is None (failed), return neutral 0.5.
+    Previously sequential (15 round-trips); now all fire at once.
     """
-    scores: list[float] = []
-    for emb in embeddings:
-        if emb is None:
-            scores.append(0.5)
-            continue
-        try:
-            result = await session.execute(
-                select(
-                    UserPost.content_embedding.cosine_distance(emb).label("dist")
-                )
-                .where(
-                    UserPost.user_id == user_id,
-                    UserPost.content_embedding.is_not(None),
-                )
-                .order_by("dist")
-                .limit(1)
-            )
-            row = result.fetchone()
-            if row is None:
-                scores.append(0.5)
-            else:
-                dist = float(row[0]) if row[0] is not None else 1.0
-                # cosine distance in [0, 2]; normalize to [0, 1]
-                # dist=0 → already written (novel=0), dist≥0.5 → fresh territory (novel=1)
-                novelty = min(1.0, dist / 0.5)
-                scores.append(novelty)
-        except Exception as e:
-            logger.warning("Novelty pgvector query failed: %s", e)
-            scores.append(0.5)
-    return scores
+    return list(
+        await asyncio.gather(*[_novelty_for_one(user_id, emb, session) for emb in embeddings])
+    )
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

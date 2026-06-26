@@ -3,7 +3,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth import get_current_user
@@ -26,6 +26,7 @@ from schemas.generation import (
     RepurposeResponse,
     VariantResponse,
 )
+from services.cache.voice_profile_cache import get_cached_profile, set_cached_profile
 from services.generation.consistency import check_belief_consistency
 from services.generation.edit_learner import (
     get_edit_rules_for_prompt,
@@ -48,6 +49,15 @@ router = APIRouter(prefix="/generate", tags=["generation"])
 
 
 async def _require_ready_profile(user_id: uuid.UUID, session: AsyncSession) -> VoiceProfile:
+    profile = await get_cached_profile(user_id)
+    if profile is not None:
+        if profile.status != "ready":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Voice profile not ready. Build your Voice DNA first.",
+            )
+        return profile
+
     result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user_id))
     profile = result.scalar_one_or_none()
     if profile is None or profile.status != "ready":
@@ -55,6 +65,7 @@ async def _require_ready_profile(user_id: uuid.UUID, session: AsyncSession) -> V
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Voice profile not ready. Build your Voice DNA first.",
         )
+    await set_cached_profile(profile)
     return profile
 
 
@@ -64,7 +75,7 @@ async def generate(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> GenerateResponse:
-    allowed, retry_after = check_rate_limit(str(user.id), "generate")
+    allowed, retry_after = await check_rate_limit(str(user.id), "generate")
     if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -144,6 +155,7 @@ async def generate(
             model_used=v.llm_response.model,
             tokens_input=v.llm_response.input_tokens,
             tokens_output=v.llm_response.output_tokens,
+            user=user,
         )
 
     await session.commit()
@@ -170,7 +182,7 @@ async def repurpose(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> RepurposeResponse:
-    allowed, retry_after = check_rate_limit(str(user.id), "repurpose")
+    allowed, retry_after = await check_rate_limit(str(user.id), "repurpose")
     if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -237,6 +249,7 @@ async def repurpose(
         model_used=response.model,
         tokens_input=response.input_tokens,
         tokens_output=response.output_tokens,
+        user=user,
     )
 
     await session.commit()
@@ -425,6 +438,35 @@ async def refine_variant(
         voice_match_score=score_result.overall_score,
         word_count=len(refined.split()),
     )
+
+
+@router.get("/history/stats")
+async def get_history_stats(
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> dict:
+    """Aggregate stats over the user's full generation history."""
+    total: int = await session.scalar(
+        select(func.count(Generation.id)).where(Generation.user_id == user.id)
+    ) or 0
+
+    # Pull scores from the 200 most recent generations to compute avg/best
+    result = await session.execute(
+        select(Generation.variants)
+        .where(Generation.user_id == user.id)
+        .order_by(Generation.created_at.desc())
+        .limit(200)
+    )
+    all_scores = [
+        v.get("voice_match_score", 0)
+        for (variants,) in result.all()
+        for v in (variants or [])
+        if isinstance(v, dict) and v.get("voice_match_score", 0) > 0
+    ]
+    avg_score = round(sum(all_scores) / len(all_scores)) if all_scores else None
+    best_score = max(all_scores) if all_scores else None
+
+    return {"total": total, "avg_score": avg_score, "best_score": best_score}
 
 
 @router.get("/history", response_model=list[GenerationHistoryItem])

@@ -228,7 +228,7 @@ export function GenerateForm() {
             value={idea}
             onChange={(e) => setIdea(e.target.value)}
             maxLength={2000}
-            minimumRows={6}
+            minimumRows={3}
             resize="none"
           />
         </div>

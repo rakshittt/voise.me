@@ -25,7 +25,7 @@ async def analyze_content(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> DNAMatchResponse:
-    allowed, retry_after = check_rate_limit(str(user.id), "dna_match")
+    allowed, retry_after = await check_rate_limit(str(user.id), "dna_match")
     if not allowed:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,

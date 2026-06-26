@@ -813,7 +813,7 @@ export default async function DashboardPage() {
           {/* Voice Strength - seed profiles only */}
           {profile?.profile_type === "seed" && <VoiceStrengthWidget />}
 
-          {/* Next idea recommendation — only for extracted profiles with real signal */}
+          {/* Next idea recommendation - only for extracted profiles with real signal */}
           {profile?.profile_type !== "seed" && <NextIdeaWidget />}
 
           {/* Checklist */}

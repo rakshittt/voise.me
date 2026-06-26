@@ -12,6 +12,7 @@ from db.session import AsyncSessionLocal
 from models.idea_context import UserIdeaContext
 from models.user_post import UserPost
 from models.voice_profile import VoiceProfile
+from services.cache.voice_profile_cache import set_cached_profile, set_cached_status
 from services.stylometrics.features import compute_stylometric_profile
 from services.voice_dna.deep_extractor import classify_argument_types, extract_deep_fingerprint
 from services.voice_dna.embedder import compute_mean_embedding, embed_and_store_posts
@@ -83,6 +84,8 @@ async def _run_build(
     else:
         profile.status = "building"
         await session.flush()
+
+    await set_cached_status(user_id, "building")
 
     try:
         # Step 1: Parse posts
@@ -163,6 +166,9 @@ async def _run_build(
             f"({len(build_posts)} posts, {len(holdout_posts)} holdouts)"
         )
 
+        # Populate cache so the next generate/status call is a cache hit
+        await set_cached_profile(profile)
+
         # Expire idea context so dashboard widget shows fresh ideas after rebuild
         await _expire_idea_context(user_id, session)
 
@@ -178,6 +184,7 @@ async def _run_build(
         logger.error(f"Voice profile build failed for user {user_id}: {e}")
         profile.status = "failed"
         await session.commit()
+        await set_cached_status(user_id, "failed")
 
 
 async def rebuild_voice_profile_from_stored(
@@ -186,7 +193,7 @@ async def rebuild_voice_profile_from_stored(
 ) -> None:
     """Re-run the analysis pipeline using already-stored post embeddings.
 
-    No re-embedding is performed — uses existing user_posts rows.
+    No re-embedding is performed - uses existing user_posts rows.
     Call this when the extraction algorithms have been improved to refresh
     a profile without requiring the user to re-paste their posts.
     """

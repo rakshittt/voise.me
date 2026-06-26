@@ -38,7 +38,7 @@ export function RebuildButton() {
   if (state === "done") {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: "var(--ds-radius-100)", border: "1px solid var(--ds-border-success)", background: "var(--ds-background-success)", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-success)", fontWeight: "var(--ds-font-weight-semibold)" }}>
-        ✓ Rebuilding — refreshes automatically
+        ✓ Rebuilding - refreshes automatically
       </div>
     );
   }
@@ -46,7 +46,7 @@ export function RebuildButton() {
   if (state === "error") {
     return (
       <div style={{ padding: "8px 16px", borderRadius: "var(--ds-radius-100)", border: "1px solid var(--ds-border-danger)", background: "var(--ds-background-danger)", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-danger)" }}>
-        Rebuild failed — try again
+        Rebuild failed - try again
       </div>
     );
   }

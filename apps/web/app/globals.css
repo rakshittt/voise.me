@@ -226,6 +226,47 @@ a:hover {
   text-decoration: underline;
 }
 
+/* ── Motion / interactive additions ───────────────────────────────────────── */
+
+/* Hero background blobs */
+@keyframes blobFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-18px, -22px) scale(1.04); }
+  66%       { transform: translate(14px, 12px) scale(0.97); }
+}
+@keyframes blobFloatB {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(22px, -18px) scale(1.03); }
+}
+
+/* Infinite horizontal marquee - set to -50% so a doubled list loops perfectly */
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-track { animation: marqueeScroll 32s linear infinite; }
+.marquee-track:hover { animation-play-state: paused; }
+
+/* CTA glow pulse */
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+  50%       { box-shadow: 0 0 32px 8px rgba(255,255,255,0.18); }
+}
+.btn-glow { animation: ctaGlow 3s ease-in-out infinite; }
+
+/* Hero score widget float */
+@keyframes floatUD {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* Card hover - upgrade the existing card-lift with brand accent */
+.card-lift:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 32px rgba(0,82,204,0.12), 0 0 0 1px var(--ds-border-brand) !important;
+  border-color: var(--ds-border-brand) !important;
+}
+
 /* ── Landing page animations ───────────────────────────────────────────────── */
 
 @keyframes fadeInUp {
@@ -276,6 +317,11 @@ a:hover {
 @keyframes countUp {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 @keyframes drawLine {

@@ -17,12 +17,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.post_edit_event import PostEditEvent
 from models.user_post import UserPost
+from services.cache.client import get_redis
+from services.cache.keys import edit_rules_key
 from services.llm.router import llm_call
 from services.voice_dna.embedder import embed_text
 
 logger = logging.getLogger(__name__)
 
 MAX_RULES_IN_PROMPT = 8
+EDIT_RULES_TTL = 600  # 10 minutes
 RECENT_EVENTS_WINDOW = 50
 
 # Maps client rejection reason strings → temporary edit rule dicts injected into
@@ -146,6 +149,13 @@ async def process_edit_event(
     except Exception as e:
         logger.warning(f"Failed to re-embed edited post for user {user_id}: {e}")
 
+    # Invalidate cache so the next generation picks up the new rule immediately
+    if redis := get_redis():
+        try:
+            await redis.delete(edit_rules_key(user_id))
+        except Exception as e:
+            logger.warning("Redis edit rules invalidation failed: %s", e)
+
     logger.info(f"Edit event stored for user {user_id}: {len(rules)} rules inferred")
     return event
 
@@ -157,7 +167,17 @@ async def get_edit_rules_for_prompt(
     """Return deduplicated edit rules from recent events, ordered by recency.
 
     Used to inject personalized constraints into the generation prompt.
+    Cached in Redis for 10 minutes; invalidated when a new edit event is stored.
     """
+    redis = get_redis()
+    if redis is not None:
+        try:
+            raw = await redis.get(edit_rules_key(user_id))
+            if raw:
+                return json.loads(raw)
+        except Exception as e:
+            logger.warning("Redis edit rules read failed: %s", e)
+
     result = await session.execute(
         select(PostEditEvent.inferred_rules)
         .where(
@@ -184,5 +204,11 @@ async def get_edit_rules_for_prompt(
                 break
         if len(deduped) >= MAX_RULES_IN_PROMPT:
             break
+
+    if redis is not None:
+        try:
+            await redis.setex(edit_rules_key(user_id), EDIT_RULES_TTL, json.dumps(deduped))
+        except Exception as e:
+            logger.warning("Redis edit rules write failed: %s", e)
 
     return deduped

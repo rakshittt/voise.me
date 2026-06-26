@@ -112,14 +112,14 @@ def _build_prompt(profile: VoiceProfile, context: IdeaContext) -> str:
     if neglected:
         lines += [
             "",
-            "NEGLECTED TOPICS (strong history, but nothing posted in 30+ days — high-value gaps):",
+            "NEGLECTED TOPICS (strong history, but nothing posted in 30+ days - high-value gaps):",
         ]
         for t in neglected[:4]:
             lines.append(f"  - {t}")
     elif gaps:
         lines += [
             "",
-            "COVERAGE GAPS (topics not posted recently — consider these):",
+            "COVERAGE GAPS (topics not posted recently - consider these):",
         ]
         for t in gaps[:4]:
             lines.append(f"  - {t}")
@@ -136,7 +136,7 @@ def _build_prompt(profile: VoiceProfile, context: IdeaContext) -> str:
         "",
         "Rules:",
         "1. Every idea MUST be grounded in one of the creator's expertise topics",
-        "2. Ideas should be SPECIFIC — include a concrete angle, not a vague theme",
+        "2. Ideas should be SPECIFIC - include a concrete angle, not a vague theme",
         "3. Vary content types: Story, Insight, List, How-to, Contrarian, Observation",
         "4. Hooks must match the creator's dominant hook style and persona",
         "5. At least 4 ideas should address neglected/gap topics if they exist",

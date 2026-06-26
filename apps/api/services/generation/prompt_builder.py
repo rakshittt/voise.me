@@ -604,7 +604,7 @@ def build_repurpose_prompt(
     if similar_posts:
         exemplars = "\n---\n".join(similar_posts)
         exemplar_block = (
-            "EXAMPLE POSTS FROM THIS PERSON (your style reference — these are ground truth):\n"
+            "EXAMPLE POSTS FROM THIS PERSON (your style reference - these are ground truth):\n"
             f"---\n{exemplars}\n---\n\n"
         )
     else:
@@ -651,8 +651,8 @@ Tone: {_format_tone(profile.emotional_register)}
 
 {deep_fingerprint_block}
 
-{exemplar_block}CONTENT INTELLIGENCE (do this silently before writing — do not output these steps):
-1. CATALOG every specific in the source: every number, percentage, metric, company name, product name, framework, technical term, timeframe, price point, named person, and exact methodology. These are MANDATORY in the output. Never strip, round, or genericize them. "$2.3M ARR" stays "$2.3M ARR" — not "millions in revenue". "conversion rate dropped 47%" stays exact — not "significantly dropped".
+{exemplar_block}CONTENT INTELLIGENCE (do this silently before writing - do not output these steps):
+1. CATALOG every specific in the source: every number, percentage, metric, company name, product name, framework, technical term, timeframe, price point, named person, and exact methodology. These are MANDATORY in the output. Never strip, round, or genericize them. "$2.3M ARR" stays "$2.3M ARR" - not "millions in revenue". "conversion rate dropped 47%" stays exact - not "significantly dropped".
 2. FIND THE ANGLE: the single fact, contrast, or outcome in the source that is most counterintuitive, surprising, or immediately actionable for practitioners in this author's field. The angle often lives in an unexpected number or outcome, not a general lesson.
 3. LEAD WITH SPECIFICS: put the most striking specific in the first line. "We cut churn by 31% by removing a feature" beats "We learned something counterintuitive about product." Numbers and technical depth are the hook for the right LinkedIn audience, not something to bury or soften.
 
@@ -674,7 +674,7 @@ STRUCTURAL TELLS TO ELIMINATE (these mark AI output - never use them):
 
 ABSOLUTE RULES:
 1. Never use em dashes
-2. Keep EVERY specific number, technical term, and named entity from the source — they are the post's credibility
+2. Keep EVERY specific number, technical term, and named entity from the source - they are the post's credibility
 3. Post length: 150–350 words (use the full range when technical depth warrants it)
 4. Never fabricate facts not present in the source or the author background above
 5. Return ONLY the post text. No preamble. No metadata. No quotes around the post."""

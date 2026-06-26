@@ -205,11 +205,11 @@ export function RepurposeForm() {
       <Card elevation="flat" padding="none">
         <div style={{ padding: "var(--ds-space-200) var(--ds-space-200) var(--ds-space-100)" }}>
           <TextArea
-            label="Paste your content to repurpose"
-            placeholder="Paste a blog post, newsletter, podcast transcript, LinkedIn article, or any long-form content. The best insight will be extracted and rewritten as a LinkedIn post in your voice."
+            label="Paste your content here"
+            placeholder="Paste a blog post, article, newsletter, or transcript. We extract the key insight and rewrite it as a LinkedIn post in your voice. Works best with 300–5,000 words."
             value={source}
             onChange={(e) => setSource(e.target.value)}
-            minimumRows={8}
+            minimumRows={14}
             maxLength={10000}
           />
         </div>

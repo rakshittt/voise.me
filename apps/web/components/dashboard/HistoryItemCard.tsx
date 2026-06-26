@@ -18,10 +18,12 @@ function HistoryVariantCard({
   variant,
   rank,
   generationId,
+  createdAt,
 }: {
   variant: HistoryVariant;
   rank: number;
   generationId: string;
+  createdAt: string;
 }) {
   const [copied, setCopied] = useState(false);
   const [refineOpen, setRefineOpen] = useState(false);
@@ -64,7 +66,7 @@ function HistoryVariantCard({
 
       {/* LinkedIn preview */}
       <div style={{ padding: "var(--ds-space-150)", background: "var(--ds-background-neutral-subtle)" }}>
-        <LinkedInPreview content={variant.content} />
+        <LinkedInPreview content={variant.content} createdAt={createdAt} />
       </div>
 
       {/* Action footer - shown after reading the content */}
@@ -110,11 +112,17 @@ function HistoryVariantCard({
           initialContent={variant.content}
           initialScore={variant.voice_match_score}
           onClose={() => setRefineOpen(false)}
+          hideCurrentDraft
         />
       )}
     </div>
   );
 }
+
+const TYPE_LABEL: Record<string, string> = {
+  idea: "Idea",
+  repurpose: "Repurposed",
+};
 
 export function HistoryItemCard({ gen }: { gen: GenerationHistoryItem }) {
   const [open, setOpen] = useState(false);
@@ -125,13 +133,18 @@ export function HistoryItemCard({ gen }: { gen: GenerationHistoryItem }) {
   );
   const topScore = sorted[0]?.voice_match_score ?? 0;
 
+  // Show the hook (first line) of the best variant as the card preview
+  const bestContent = sorted[0]?.content ?? gen.input_text;
+  const previewText = bestContent.split("\n").find((l) => l.trim()) ?? bestContent;
+
   return (
     <div
       style={{
         background: "var(--ds-surface)",
         borderRadius: "var(--ds-radius-200)",
-        border: `1px solid var(--ds-border)`,
+        border: `1px solid ${open ? "#0A66C2" : "var(--ds-border)"}`,
         overflow: "hidden",
+        transition: "border-color 0.15s",
       }}
     >
       {/* Collapsed row */}
@@ -140,33 +153,55 @@ export function HistoryItemCard({ gen }: { gen: GenerationHistoryItem }) {
         style={{
           width: "100%",
           textAlign: "left",
-          padding: "var(--ds-space-200)",
+          padding: "14px 18px",
           background: "none",
           border: "none",
           cursor: "pointer",
-          transition: "background 0.15s",
+          transition: "background 0.12s",
         }}
         onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ds-background-neutral-subtle)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "var(--ds-space-150)" }}>
-          <p style={{ margin: 0, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)", flex: 1, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-            {gen.input_text}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+          <p style={{
+            margin: 0,
+            fontSize: 14,
+            fontWeight: 500,
+            color: "var(--ds-text)",
+            flex: 1,
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            lineHeight: 1.5,
+          }}>
+            {previewText}
           </p>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--ds-space-075)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <Lozenge appearance={scoreToAppearance(topScore)}>{topScore}%</Lozenge>
-            <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)" }}>{open ? "▲" : "▼"}</span>
+            <span style={{ fontSize: 11, color: "var(--ds-text-subtlest)", lineHeight: 1 }}>{open ? "▲" : "▼"}</span>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "var(--ds-space-100)", marginTop: "var(--ds-space-100)" }}>
-          <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "var(--ds-text-subtlest)" }}>
             {new Date(gen.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
           </span>
-          <span style={{ color: "var(--ds-border)", fontSize: "var(--ds-font-size-075)" }}>·</span>
-          <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)", textTransform: "capitalize" }}>{gen.input_type}</span>
-          <span style={{ color: "var(--ds-border)", fontSize: "var(--ds-font-size-075)" }}>·</span>
-          <span style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)" }}>{variants.length} variant{variants.length !== 1 ? "s" : ""}</span>
+          <span style={{ color: "var(--ds-border)", fontSize: 11 }}>·</span>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: gen.input_type === "repurpose" ? "#6366f1" : "#0A66C2",
+            background: gen.input_type === "repurpose" ? "#f0f0ff" : "#e8f0fe",
+            padding: "1px 7px",
+            borderRadius: 10,
+          }}>
+            {TYPE_LABEL[gen.input_type] ?? gen.input_type}
+          </span>
+          <span style={{ color: "var(--ds-border)", fontSize: 11 }}>·</span>
+          <span style={{ fontSize: 11, color: "var(--ds-text-subtlest)" }}>
+            {variants.length} variant{variants.length !== 1 ? "s" : ""}
+          </span>
         </div>
       </button>
 
@@ -187,6 +222,7 @@ export function HistoryItemCard({ gen }: { gen: GenerationHistoryItem }) {
               variant={v}
               rank={i}
               generationId={gen.id.toString()}
+              createdAt={gen.created_at}
             />
           ))}
         </div>
