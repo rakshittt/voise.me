@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     STRIPE_PRICE_PRO: str = ""
     STRIPE_PRICE_BETA: str = ""
 
+    # Local dev: redis://localhost:6379/0
+    # Upstash (prod): rediss://default:<TOKEN>@<host>.upstash.io:<port>
     REDIS_URL: str = "redis://localhost:6379/0"
 
     TRIAL_DAYS: int = 14

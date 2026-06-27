@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* ── Tailwind v4 theme — Cohere-inspired light palette ──────────────────── */
+@theme {
+  --font-sans:    var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
+
+  --color-background:           #ffffff;
+  --color-foreground:           #17171c;
+  --color-primary:              #17171c;
+  --color-primary-foreground:   #ffffff;
+  --color-secondary:            #eeece7;
+  --color-secondary-foreground: #17171c;
+  --color-muted:                #eeece7;
+  --color-muted-foreground:     #6b6b7b;
+  --color-accent:               #f0effe;
+  --color-accent-foreground:    #17171c;
+  --color-destructive:          #c0392b;
+  --color-destructive-foreground: #ffffff;
+  --color-border:               #d9d9dd;
+  --color-input:                #e5e3dc;
+  --color-ring:                 #5856D6;
+}
+
 /* ── Atlassian Design System - Light Theme Tokens ─────────────────────────── */
 :root {
   /* Background */
@@ -109,7 +132,7 @@
   --ds-radius-circle: 50%;
 
   /* Typography */
-  --ds-font-family-sans: "Inter var", "Inter", sans-serif;
+  --ds-font-family-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   --ds-font-family-mono:
     "SFMono-Medium", "SF Mono", "Segoe UI Mono", "Roboto Mono",
     "Ubuntu Mono", Menlo, Consolas, Courier, monospace;
@@ -138,7 +161,9 @@
 
 /* ── Tailwind theme overrides - map Tailwind colors to ADS tokens ──────────── */
 @theme {
-  --font-sans: "Inter var", "Inter", sans-serif;
+  --font-sans:    var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-mono), "JetBrains Mono", ui-monospace, monospace;
   --font-mono: var(--ds-font-family-mono);
 
   /* Remap default color palette to ADS values */
@@ -408,6 +433,45 @@ a:hover {
 }
 .faq-body.open {
   opacity: 1;
+}
+
+/* ── Dark landing page ─────────────────────────────────────────────────────── */
+/* Testimonial marquee */
+.tm-track { animation: marqueeScroll 36s linear infinite; }
+.tm-track:hover { animation-play-state: paused; }
+
+/* Hero two-column grid */
+@media (max-width: 900px) {
+  .grid-hero { grid-template-columns: 1fr !important; }
+}
+
+/* Features bento grid */
+@media (max-width: 768px) {
+  .features-bento { grid-template-columns: 1fr !important; }
+  .feature-large  { grid-column: span 1 !important; }
+}
+
+/* Footer columns */
+@media (max-width: 768px) {
+  .footer-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 480px) {
+  .footer-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Nav links hidden on small screens */
+@media (max-width: 640px) {
+  .hidden-mobile { display: none !important; }
+}
+
+/* Reduced motion — disable all framer-motion + CSS animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── ADS Navigation sidebar token variables ────────────────────────────────── */
