@@ -188,7 +188,6 @@ async def get_user_detail(user_id: str, admin: AdminUser, session: DB) -> dict:
         "created_at": user.created_at.isoformat(),
         "trial_ends_at": user.trial_ends_at.isoformat() if user.trial_ends_at else None,
         "trial_days_remaining": (user.trial_ends_at - now).days if user.trial_ends_at and user.trial_ends_at > now else None,
-        "stripe_customer_id": user.stripe_customer_id,
         "generations_total": generations_total,
         "cost_usd_total": float(cost_total),
         "usage_by_action": [

@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 import uuid
@@ -5,6 +6,9 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 import httpx
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -55,12 +59,38 @@ async def _get_jwks() -> dict:
     return jwks
 
 
+def _jwk_to_pem(jwk_key: dict) -> str:
+    """Convert a JWK RSA public key to PEM using cryptography directly.
+    python-jose's internal JWK->PEM path produces MalformedFraming on newer cryptography builds."""
+    def _b64url_to_int(s: str) -> int:
+        padding = 4 - len(s) % 4
+        if padding != 4:
+            s += "=" * padding
+        return int.from_bytes(base64.urlsafe_b64decode(s), "big")
+
+    n = _b64url_to_int(jwk_key["n"])
+    e = _b64url_to_int(jwk_key["e"])
+    pub = RSAPublicNumbers(e, n).public_key(default_backend())
+    return pub.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo).decode()
+
+
 async def _verify_clerk_token(token: str) -> dict:
     try:
+        header = jwt.get_unverified_header(token)
+        kid = header.get("kid")
+
         jwks = await _get_jwks()
+        matching_key = next(
+            (k for k in jwks.get("keys", []) if k.get("kid") == kid),
+            None,
+        )
+        if not matching_key:
+            raise JWTError(f"No JWKS key found for kid={kid!r}")
+
+        pem = _jwk_to_pem(matching_key)
         claims = jwt.decode(
             token,
-            jwks,
+            pem,
             algorithms=["RS256"],
             options={"verify_aud": False},
         )

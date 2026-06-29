@@ -15,8 +15,6 @@ class User(Base):
     email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     name: Mapped[str | None] = mapped_column(String(255))
     plan: Mapped[str] = mapped_column(String(50), nullable=False, default="starter")
-    stripe_customer_id: Mapped[str | None] = mapped_column(String(255), index=True)
-    stripe_subscription_id: Mapped[str | None] = mapped_column(String(255))
     trial_ends_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     # Creator background injected into generation prompts
