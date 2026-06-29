@@ -158,7 +158,7 @@ const FAQS = [
   { q: "How is Voise different from ChatGPT or other AI writing tools?", a: "ChatGPT writes from a prompt using patterns averaged across millions of users. Voise builds a private model from your specific writing, scores every generated draft against that model, and refines based on your real-time feedback. The output isn't just AI-generated text - it's text measured against your fingerprint." },
   { q: "What if I don't have many LinkedIn posts?", a: "If you have 15 or more posts, we build directly from those. If you're starting fresh, answer 7 questions about how you think and write - we build a seed profile from your responses and update it automatically as you generate and refine." },
   { q: "What counts as one generation?", a: "Each time you submit an idea, Voise produces 3 scored variants - that counts as 1 generation. Refining a variant in the AI chat does not count against your generation limit." },
-  { q: "Can I try it before paying?", a: "Yes. The Starter plan is completely free - no credit card required. You get full Voice DNA setup, 20 generations per month, and 5 repurposes. The Growth plan comes with a 14-day free trial at full access." },
+  { q: "Can I try it before paying?", a: "Yes. Every account starts with a 30-day free trial at full Growth access — no credit card required. The free plan gives you 30 generations and 20 repurposes per month. Upgrade to Growth for unlimited everything." },
   { q: "Does Voise post to LinkedIn for me?", a: "No. Voise generates and scores the content. You copy it, review it, and post it yourself. You stay in full control of what goes live - we don't touch your LinkedIn account." },
 ];
 
@@ -1185,7 +1185,7 @@ function PrivacySection() {
 ══════════════════════════════════════════════════════════════════════════ */
 function PricingSection() {
   const checks = {
-    starter: ["Full Voice DNA setup", "20 generations / month", "5 repurposes / month", "Voice match score on every draft"],
+    starter: ["Full Voice DNA setup", "30 generations / month", "20 repurposes / month", "Voice match score on every draft"],
     growth:  ["Everything in Starter", "Unlimited generations", "Unlimited repurposes", "Idea recommendations", "Priority support"],
   };
   return (
@@ -1244,7 +1244,7 @@ function PricingSection() {
               </ul>
               <Link href="/sign-up"
                 style={{ display: "block", textAlign: "center", padding: "11px", borderRadius: 32, backgroundColor: C.ink, color: "#fff", fontSize: 14, fontWeight: 500, textDecoration: "none" }}>
-                Start 14-day free trial
+                Start 30-day free trial
               </Link>
             </div>
           </InView>

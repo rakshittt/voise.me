@@ -424,7 +424,7 @@ export function AnimatedHero() {
             transition={{ duration: 0.4, delay: 0.4 }}
             style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.faint, letterSpacing: "0.04em" }}
           >
-            Free · No credit card · 14-day trial on Growth
+            Free · No credit card · 30-day trial on Growth
           </motion.p>
         </div>
 

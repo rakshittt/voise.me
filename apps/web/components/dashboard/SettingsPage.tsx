@@ -22,9 +22,8 @@ interface UserData {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  starter: "Starter - Free",
-  growth: "Growth - $79/mo",
-  pro: "Pro - $199/mo",
+  starter: "Free",
+  growth: "Growth - $29/mo",
   trial: "Trial",
 };
 
@@ -168,42 +167,31 @@ function SettingsPageContent() {
             <p style={{ margin: 0, fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)" }}>
               Upgrade to get more generations and priority support.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                onClick={() => startCheckout("growth")}
-                style={{
-                  padding: "var(--ds-space-150)",
-                  borderRadius: "var(--ds-radius-200)",
-                  border: `2px solid var(--ds-border)`,
-                  textAlign: "left",
-                  cursor: "pointer",
-                  background: "var(--ds-surface)",
-                  transition: "border-color 0.15s",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--ds-border-brand)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--ds-border)"; }}
-              >
+            <button
+              onClick={() => startCheckout("growth")}
+              style={{
+                width: "100%",
+                padding: "var(--ds-space-200)",
+                borderRadius: "var(--ds-radius-200)",
+                border: `2px solid var(--ds-border-brand)`,
+                textAlign: "left",
+                cursor: "pointer",
+                background: "var(--ds-background-brand-subtle)",
+                transition: "opacity 0.15s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "var(--ds-space-200)",
+              }}
+            >
+              <div>
                 <div style={{ fontWeight: "var(--ds-font-weight-semibold)", fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)" }}>Growth</div>
-                <div style={{ fontSize: "var(--ds-font-size-300)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", margin: "var(--ds-space-050) 0" }}>$79<span style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "normal", color: "var(--ds-text-subtle)" }}>/mo</span></div>
-                <div style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)" }}>20 posts · 10 repurposes</div>
-              </button>
-              <button
-                onClick={() => startCheckout("pro")}
-                style={{
-                  padding: "var(--ds-space-150)",
-                  borderRadius: "var(--ds-radius-200)",
-                  border: `2px solid var(--ds-border-brand)`,
-                  textAlign: "left",
-                  cursor: "pointer",
-                  background: "var(--ds-background-brand-subtle)",
-                  transition: "opacity 0.15s",
-                }}
-              >
-                <div style={{ fontWeight: "var(--ds-font-weight-semibold)", fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)" }}>Pro</div>
-                <div style={{ fontSize: "var(--ds-font-size-300)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", margin: "var(--ds-space-050) 0" }}>$199<span style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "normal", color: "var(--ds-text-subtle)" }}>/mo</span></div>
-                <div style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtlest)" }}>100 posts · 50 repurposes</div>
-              </button>
-            </div>
+                <div style={{ fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)", marginTop: 4 }}>Unlimited generations · Unlimited repurposes · Ideas · Priority support</div>
+              </div>
+              <div style={{ fontSize: "var(--ds-font-size-300)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", flexShrink: 0 }}>
+                $29<span style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "normal", color: "var(--ds-text-subtle)" }}>/mo</span>
+              </div>
+            </button>
           </div>
         )}
       </Card>

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { Avatar } from "@/components/ui/Avatar";
 import { VoiseLogo } from "@/components/ui/VoiseLogo";
 
@@ -212,8 +212,19 @@ function NavLink({ href, label, Icon, active }: NavItem & { active: boolean }) {
   );
 }
 
+function SignOutIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  );
+}
+
 function UserSection() {
   const { user } = useUser();
+  const { signOut } = useClerk();
   if (!user) return null;
 
   const name = user.fullName ?? user.firstName ?? "You";
@@ -259,6 +270,34 @@ function UserSection() {
           {plan}
         </p>
       </div>
+      <button
+        onClick={() => signOut({ redirectUrl: "/" })}
+        title="Sign out"
+        style={{
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 28,
+          height: 28,
+          borderRadius: "var(--ds-radius-100)",
+          border: "none",
+          background: "transparent",
+          color: "var(--ds-text-subtlest)",
+          cursor: "pointer",
+          transition: "background 0.1s, color 0.1s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "var(--ds-background-danger-subtle, #fff1f0)";
+          e.currentTarget.style.color = "var(--ds-icon-danger, #c0392b)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.color = "var(--ds-text-subtlest)";
+        }}
+      >
+        <SignOutIcon />
+      </button>
     </div>
   );
 }

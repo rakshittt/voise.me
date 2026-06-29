@@ -15,7 +15,7 @@ UNLIMITED = -1
 
 # -1 means unlimited. Starter is the only metered plan.
 PLAN_LIMITS: dict[str, dict[str, int]] = {
-    "starter": {"generate": 20, "repurpose": 5},
+    "starter": {"generate": 30, "repurpose": 20},
     "growth": {"generate": UNLIMITED, "repurpose": UNLIMITED},
     "pro": {"generate": UNLIMITED, "repurpose": UNLIMITED},
     "beta": {"generate": UNLIMITED, "repurpose": UNLIMITED},

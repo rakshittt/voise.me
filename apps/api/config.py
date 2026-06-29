@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     # Upstash (prod): rediss://default:<TOKEN>@<host>.upstash.io:<port>
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    TRIAL_DAYS: int = 14
+    TRIAL_DAYS: int = 30
     APP_URL: str = "http://localhost:3000"
 
     LOG_PROMPTS: bool = False

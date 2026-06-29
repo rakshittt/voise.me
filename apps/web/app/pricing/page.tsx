@@ -77,8 +77,8 @@ const MATRIX = [
   {
     section: "⚡ Generation",
     rows: [
-      { feature: "Generations per month",            starter: "20", growth: "Unlimited" },
-      { feature: "Repurposes per month",             starter: "5",  growth: "Unlimited" },
+      { feature: "Generations per month",            starter: "30", growth: "Unlimited" },
+      { feature: "Repurposes per month",             starter: "20", growth: "Unlimited" },
       { feature: "Variants per generation",          starter: "3",  growth: "3" },
       { feature: "Voice match score on every draft", starter: true, growth: true },
       { feature: "AI refinement chat",               starter: true, growth: true },
@@ -105,7 +105,7 @@ const MATRIX = [
     rows: [
       { feature: "Community support",                starter: true,  growth: true },
       { feature: "Priority support",                 starter: false, growth: true },
-      { feature: "14-day free trial",                starter: false, growth: true },
+      { feature: "30-day free trial",                starter: false, growth: true },
     ],
   },
 ];
@@ -124,8 +124,8 @@ const FAQS = [
     a: "Yes. Upgrade at any time - access unlocks immediately. Downgrade takes effect at the end of your current billing period. No lock-in.",
   },
   {
-    q: "Is the 14-day trial really free?",
-    a: "Yes. The Growth trial gives you full access to every feature for 14 days - unlimited generations, idea recommendations, and priority support. No charge until the trial ends. Cancel any time before that with no cost.",
+    q: "Is the 30-day trial really free?",
+    a: "Yes. Every account starts with a 30-day Growth trial — unlimited generations, idea recommendations, and priority support. No credit card required. No charge until the trial ends. Cancel any time before that at no cost.",
   },
   {
     q: "Do you offer annual pricing?",
@@ -174,7 +174,7 @@ export default function PricingPage() {
           <Reveal>
             <div style={{ backgroundColor: "var(--ds-surface)", border: "1.5px solid var(--ds-border)", borderRadius: "var(--ds-radius-300)", padding: "var(--ds-space-500)", height: "100%", display: "flex", flexDirection: "column" }}>
               <div style={{ marginBottom: "auto" }}>
-                <div style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-subtlest)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Starter</div>
+                <div style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-subtlest)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>Free</div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
                   <span style={{ fontSize: 52, fontWeight: 900, color: "var(--ds-text)", lineHeight: 1, letterSpacing: "-0.05em" }}>Free</span>
                 </div>
@@ -184,8 +184,8 @@ export default function PricingPage() {
                 <ul style={{ listStyle: "none", padding: 0, margin: "0 0 var(--ds-space-400)", display: "flex", flexDirection: "column", gap: 12 }}>
                   {[
                     { e: "🧬", t: "Full Voice DNA fingerprint" },
-                    { e: "⚡", t: "20 generations per month" },
-                    { e: "🔄", t: "5 repurposes per month" },
+                    { e: "⚡", t: "30 generations per month" },
+                    { e: "🔄", t: "20 repurposes per month" },
                     { e: "🎯", t: "Voice match score on every draft" },
                     { e: "💬", t: "AI refinement chat" },
                     { e: "📊", t: "Full generation history" },
@@ -225,7 +225,7 @@ export default function PricingPage() {
                     { e: "💡", t: "Idea recommendations" },
                     { e: "📈", t: "Copy-without-edit rate tracking" },
                     { e: "🎖️", t: "Priority support" },
-                    { e: "🎁", t: "14-day free trial" },
+                    { e: "🎁", t: "30-day free trial" },
                   ].map(({ e, t }) => (
                     <li key={t} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: "var(--ds-font-size-100)", color: "rgba(255,255,255,0.9)", lineHeight: 1.45 }}>
                       <span style={{ flexShrink: 0, fontSize: 15 }}>{e}</span>{t}
@@ -234,7 +234,7 @@ export default function PricingPage() {
                 </ul>
               </div>
               <Link href="/sign-up" style={{ display: "block", textAlign: "center", padding: "11px", borderRadius: "var(--ds-radius-200)", backgroundColor: "var(--ds-text-inverse)", color: "var(--ds-background-brand-bold)", fontSize: "var(--ds-font-size-100)", fontWeight: "var(--ds-font-weight-bold)", textDecoration: "none", marginTop: "var(--ds-space-300)" }}>
-                Start 14-day free trial
+                Start 30-day free trial
               </Link>
             </div>
           </Reveal>
@@ -262,7 +262,7 @@ export default function PricingPage() {
             {/* Header row */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px", borderBottom: "2px solid var(--ds-border)", backgroundColor: "var(--ds-surface-sunken)" }}>
               <div style={{ padding: "14px 20px", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-subtlest)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Feature</div>
-              <div style={{ padding: "14px 20px", textAlign: "center", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-subtlest)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starter</div>
+              <div style={{ padding: "14px 20px", textAlign: "center", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-subtlest)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Free</div>
               <div style={{ padding: "14px 20px", textAlign: "center", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text-brand)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Growth</div>
             </div>
 

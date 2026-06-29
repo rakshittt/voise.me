@@ -1,14 +1,11 @@
 "use client";
 
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Heading from "@/components/ui/Heading";
-import { Lozenge } from "@/components/ui/Lozenge";
 
 const PLAN_NAMES: Record<string, string> = {
-  starter: "Starter",
+  starter: "Free",
   growth: "Growth",
-  pro: "Pro",
   trial: "Trial",
 };
 
@@ -82,40 +79,26 @@ export function UpgradeModal({ plan, used, limit, action, onClose }: UpgradeModa
             Upgrade to keep generating posts in your authentic voice.
           </p>
 
-          {/* Plan cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--ds-space-150)" }}>
-            <Card elevation="flat" padding="default">
+          {/* Growth plan card */}
+          <div
+            style={{
+              borderRadius: "var(--ds-radius-200)",
+              border: `2px solid var(--ds-border-brand)`,
+              backgroundColor: "var(--ds-background-brand-subtle)",
+              padding: "var(--ds-space-250)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "var(--ds-space-200)",
+            }}
+          >
+            <div>
               <p style={{ margin: 0, fontWeight: "var(--ds-font-weight-semibold)", fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)" }}>Growth</p>
-              <p style={{ margin: "var(--ds-space-050) 0 0", fontSize: "var(--ds-font-size-500)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)" }}>
-                $79<span style={{ fontSize: "var(--ds-font-size-100)", fontWeight: "normal", color: "var(--ds-text-subtle)" }}>/mo</span>
-              </p>
-              <p style={{ margin: "var(--ds-space-050) 0 0", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)" }}>20 posts · 10 repurposes</p>
-            </Card>
-            <div
-              style={{
-                borderRadius: "var(--ds-radius-200)",
-                border: `2px solid var(--ds-border-brand)`,
-                backgroundColor: "var(--ds-background-brand-subtle)",
-                padding: "var(--ds-space-200)",
-                position: "relative",
-              }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: -12,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                }}
-              >
-                <Lozenge appearance="inprogress" isBold>Popular</Lozenge>
-              </div>
-              <p style={{ margin: 0, fontWeight: "var(--ds-font-weight-semibold)", fontSize: "var(--ds-font-size-100)", color: "var(--ds-text)" }}>Pro</p>
-              <p style={{ margin: "var(--ds-space-050) 0 0", fontSize: "var(--ds-font-size-500)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)" }}>
-                $199<span style={{ fontSize: "var(--ds-font-size-100)", fontWeight: "normal", color: "var(--ds-text-subtle)" }}>/mo</span>
-              </p>
-              <p style={{ margin: "var(--ds-space-050) 0 0", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)" }}>100 posts · 50 repurposes</p>
+              <p style={{ margin: "var(--ds-space-050) 0 0", fontSize: "var(--ds-font-size-075)", color: "var(--ds-text-subtle)" }}>Unlimited generations · Unlimited repurposes · Ideas · Priority support</p>
             </div>
+            <p style={{ margin: 0, fontSize: "var(--ds-font-size-500)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", flexShrink: 0 }}>
+              $29<span style={{ fontSize: "var(--ds-font-size-075)", fontWeight: "normal", color: "var(--ds-text-subtle)" }}>/mo</span>
+            </p>
           </div>
 
           <Button
