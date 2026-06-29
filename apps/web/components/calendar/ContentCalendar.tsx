@@ -25,9 +25,9 @@ const C = {
 } as const;
 
 const FONT = {
-  display: "var(--font-display), 'Space Grotesk', sans-serif",
+  display: "var(--font-inter), Inter, sans-serif",
   body:    "var(--font-inter), Inter, sans-serif",
-  mono:    "var(--font-mono), 'JetBrains Mono', monospace",
+  mono:    "var(--font-inter), Inter, sans-serif",
 } as const;
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
