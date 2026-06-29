@@ -587,7 +587,7 @@ export function ContentCalendar() {
           boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
         }}>
 
-          {/* Month nav — dark band */}
+          {/* Month nav - dark band */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "14px 20px",

@@ -301,7 +301,7 @@ export function Sidebar() {
             borderBottom: "1px solid var(--ds-border)",
           }}
         >
-          <VoiseLogo markSize={28} fontSize="var(--ds-font-size-200)" fontWeight="var(--ds-font-weight-bold)" letterSpacing="-0.02em" gap={8} />
+          <VoiseLogo markSize={26} fontSize={15} gap={8} />
         </div>
 
         {/* Navigation items */}

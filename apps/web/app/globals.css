@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── Tailwind v4 theme — Cohere-inspired light palette ──────────────────── */
+/* ── Tailwind v4 theme - Cohere-inspired light palette ──────────────────── */
 @theme {
   --font-sans:    var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-display), "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
@@ -440,13 +440,21 @@ a:hover {
 .tm-track { animation: marqueeScroll 36s linear infinite; }
 .tm-track:hover { animation-play-state: paused; }
 
-/* Hero two-column grid */
+/* Hero two-column grid - stack at tablet, hide right panel on phones */
 @media (max-width: 900px) {
   .grid-hero { grid-template-columns: 1fr !important; }
 }
+@media (max-width: 600px) {
+  /* Hide LinkedIn demo panel on small phones - headline + CTA only */
+  .grid-hero > *:nth-child(2) { display: none !important; }
+}
 
 /* Features bento grid */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+  .features-bento { grid-template-columns: repeat(2, 1fr) !important; }
+  .feature-large  { grid-column: span 2 !important; }
+}
+@media (max-width: 580px) {
   .features-bento { grid-template-columns: 1fr !important; }
   .feature-large  { grid-column: span 1 !important; }
 }
@@ -459,12 +467,28 @@ a:hover {
   .footer-grid { grid-template-columns: 1fr !important; }
 }
 
-/* Nav links hidden on small screens */
+/* Nav - hamburger on mobile */
 @media (max-width: 640px) {
+  .nav-links  { display: none !important; }
+  .nav-signin { display: none !important; }
+  .nav-burger { display: flex !important; }
   .hidden-mobile { display: none !important; }
 }
 
-/* Reduced motion — disable all framer-motion + CSS animations */
+/* Hero section padding on mobile */
+@media (max-width: 768px) {
+  .hero-section { padding-top: 60px !important; padding-bottom: 72px !important; }
+}
+@media (max-width: 480px) {
+  .hero-section { padding-top: 48px !important; padding-bottom: 56px !important; }
+}
+
+/* General section horizontal padding on very small screens */
+@media (max-width: 400px) {
+  .hero-section > * { padding-left: 16px !important; padding-right: 16px !important; }
+}
+
+/* Reduced motion - disable all framer-motion + CSS animations */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

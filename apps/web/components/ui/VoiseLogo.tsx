@@ -1,44 +1,38 @@
 /**
- * Voise logo mark - 5-bar voice waveform on a rounded brand-blue square.
+ * Voise logo - standalone waveform bars + "Voise" wordmark.
+ * Brand: #1B3A5F navy (on light), #ffffff (on dark).
+ * Typeface: Outfit Semibold 600.
  *
- * VoiseMark   = icon only (square + bars)
- * VoiseLogo   = icon + "Voise" wordmark side by side
+ * VoiseMark  = icon only (no background square)
+ * VoiseLogo  = icon + wordmark
  */
 
 interface MarkProps {
   size?: number;
+  color?: string;
 }
 
-export function VoiseMark({ size = 28 }: MarkProps) {
-  const r = Math.round(size * 0.25);
-  const innerSize = Math.round(size * 0.72);
-
+export function VoiseMark({ size = 24, color = "#1B3A5F" }: MarkProps) {
   return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: r,
-        backgroundColor: "var(--ds-background-brand-bold)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden
+      style={{ flexShrink: 0, display: "block" }}
     >
       {/*
-        5-bar waveform on a 20×20 canvas.
-        Bar width: 2.5  |  gap: 1  |  total span: 16.5  |  start x: 1.75
-        Heights (bell curve): 5, 9, 14, 9, 5 - all vertically centred.
+        5-bar symmetric waveform - all bars centred at y=10 on 20×20 canvas.
+        Heights: 17 | 12 | 6 | 12 | 17   (outer bars tallest, inner short)
+        Bar width 2.5, gap 1.5, start 0.75 → ends at 19.25
       */}
-      <svg width={innerSize} height={innerSize} viewBox="0 0 20 20" fill="none" aria-hidden>
-        <rect x="1.75"  y="7.5" width="2.5" height="5"  rx="1.25" fill="white" />
-        <rect x="5.25"  y="5.5" width="2.5" height="9"  rx="1.25" fill="white" />
-        <rect x="8.75"  y="3"   width="2.5" height="14" rx="1.25" fill="white" />
-        <rect x="12.25" y="5.5" width="2.5" height="9"  rx="1.25" fill="white" />
-        <rect x="15.75" y="7.5" width="2.5" height="5"  rx="1.25" fill="white" />
-      </svg>
-    </div>
+      <rect x="0.75"  y="1.5" width="2.5" height="17" rx="1.25" fill={color} />
+      <rect x="4.75"  y="4"   width="2.5" height="12" rx="1.25" fill={color} />
+      <rect x="8.75"  y="7"   width="2.5" height="6"  rx="1.25" fill={color} />
+      <rect x="12.75" y="4"   width="2.5" height="12" rx="1.25" fill={color} />
+      <rect x="16.75" y="1.5" width="2.5" height="17" rx="1.25" fill={color} />
+    </svg>
   );
 }
 
@@ -52,17 +46,26 @@ interface LogoProps {
 }
 
 export function VoiseLogo({
-  markSize = 28,
+  markSize = 24,
   fontSize = 15,
-  fontWeight = 800,
-  color = "var(--ds-text)",
-  letterSpacing = "-0.03em",
+  fontWeight = 600,
+  color = "#1B3A5F",
+  letterSpacing = "-0.02em",
   gap = 8,
 }: LogoProps) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap }}>
-      <VoiseMark size={markSize} />
-      <span style={{ fontWeight, fontSize, color, letterSpacing, lineHeight: 1 }}>
+      <VoiseMark size={markSize} color={color} />
+      <span
+        style={{
+          fontFamily: "var(--font-outfit), 'Outfit', 'Space Grotesk', sans-serif",
+          fontWeight,
+          fontSize,
+          color,
+          letterSpacing,
+          lineHeight: 1,
+        }}
+      >
         Voise
       </span>
     </div>

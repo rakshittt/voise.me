@@ -234,7 +234,7 @@ export function ParticleCanvas({
 
     const data: DrawData = { triangles: [], colors: [] };
 
-    // Capture non-null gl in a const — closures below close over this, preserving TS narrowing
+    // Capture non-null gl in a const - closures below close over this, preserving TS narrowing
     const glCtx = gl;
 
     const state: WebGLState = {

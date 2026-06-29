@@ -37,7 +37,7 @@ export function MarketingFooter() {
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
           {/* Brand */}
           <div>
-            <VoiseLogo markSize={26} fontSize={15} fontWeight={800} letterSpacing="-0.03em" gap={8} />
+            <VoiseLogo markSize={26} fontSize={15} gap={8} />
             <p style={{ margin: "16px 0 0", fontSize: "var(--ds-font-size-100)", color: "var(--ds-text-subtle)", lineHeight: "var(--ds-line-height-300)", maxWidth: 280 }}>
               AI-powered LinkedIn content that scores against your personal voice fingerprint. Not generic. Not close. Unmistakably you.
             </p>

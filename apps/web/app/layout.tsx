@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, JetBrains_Mono, Outfit } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
@@ -10,7 +10,7 @@ const inter = Inter({
   weight: ["400", "500", "600"],
 });
 
-// Display / headline font — maps to Cohere's CohereText aesthetic
+// Display / headline font - maps to Cohere's CohereText aesthetic
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-display",
@@ -18,7 +18,15 @@ const spaceGrotesk = Space_Grotesk({
   weight: ["400", "500", "600", "700"],
 });
 
-// Technical / score labels — maps to Cohere's CohereMono
+// Brand logo wordmark
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+// Technical / score labels - maps to Cohere's CohereMono
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -39,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`h-full antialiased ${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}>
+      <html lang="en" className={`h-full antialiased ${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${outfit.variable}`}>
         <body
           className="min-h-full flex flex-col"
           style={{ fontFamily: "var(--font-inter), Inter, sans-serif" }}
