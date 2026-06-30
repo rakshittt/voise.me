@@ -21,6 +21,18 @@ VP_TTL = 1800       # 30 min - profile changes only on rebuild
 VP_STATUS_TTL = 15  # 15 sec - polled every 3s during build, needs fast staleness
 
 
+def _embedding_to_list(embedding) -> list[float] | None:
+    """pgvector's Vector column deserializes to a numpy ndarray (when numpy
+    is installed), which json.dumps() can't serialize directly - convert to
+    a plain list first.
+    """
+    if embedding is None:
+        return None
+    if hasattr(embedding, "tolist"):
+        return embedding.tolist()
+    return list(embedding)
+
+
 def _profile_to_dict(profile: "VoiceProfile") -> dict:
     return {
         "id": str(profile.id),
@@ -38,7 +50,7 @@ def _profile_to_dict(profile: "VoiceProfile") -> dict:
         "cta_style": profile.cta_style,
         "emotional_register": profile.emotional_register,
         "last_built_at": profile.last_built_at.isoformat() if profile.last_built_at else None,
-        "profile_embedding": profile.profile_embedding,
+        "profile_embedding": _embedding_to_list(profile.profile_embedding),
         "content_pillars": profile.content_pillars,
         "cluster_centroids": profile.cluster_centroids,
         "lexical_signature": profile.lexical_signature,

@@ -35,7 +35,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://voise.app"),
+  metadataBase: new URL("https://voise.me"),
   title: {
     default: "Voise - LinkedIn content that sounds like you",
     template: "%s",
