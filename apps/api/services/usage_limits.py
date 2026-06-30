@@ -1,9 +1,10 @@
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import settings
 from models.usage import Usage
 from models.user import User
 from services.cache.client import get_redis
@@ -47,6 +48,43 @@ def trial_days_remaining(user: User) -> int:
     if trial_end.tzinfo is None:
         trial_end = trial_end.replace(tzinfo=UTC)
     return max(0, (trial_end - now).days)
+
+
+def maybe_extend_trial(user: User) -> bool:
+    """Extend a trial user's trial_ends_at by 1 day for generating a content piece today.
+
+    Engagement-based trial growth loop (mirrors Wispr Flow): base trial is
+    settings.TRIAL_BASE_DAYS, and each calendar day with at least one generation
+    earns +1 day, capped at settings.TRIAL_MAX_DAYS from signup. At most one
+    extension per calendar day, tracked via trial_last_extended_date.
+
+    Mutates `user` in place; caller is responsible for committing the session.
+    Returns True if trial_ends_at was actually pushed out.
+    """
+    if not is_in_trial(user):
+        return False
+
+    today = datetime.now(UTC).date()
+    if user.trial_last_extended_date == today:
+        return False
+
+    created = user.created_at or datetime.now(UTC)
+    if created.tzinfo is None:
+        created = created.replace(tzinfo=UTC)
+    cap = created + timedelta(days=settings.TRIAL_MAX_DAYS)
+
+    trial_end = user.trial_ends_at
+    if trial_end.tzinfo is None:
+        trial_end = trial_end.replace(tzinfo=UTC)
+
+    user.trial_last_extended_date = today
+
+    if trial_end >= cap:
+        return False
+
+    user.trial_ends_at = min(trial_end + timedelta(days=1), cap)
+    logger.info(f"Trial extended for user {user.id}: now ends {user.trial_ends_at.date()}")
+    return True
 
 
 def _billing_period_start(user: User) -> datetime:
@@ -130,6 +168,19 @@ async def check_usage_limit(
     # Pure DB fallback
     used = await _get_db_usage_count(user.id, action, period_start, session)
     return used < limit, used, limit
+
+
+async def invalidate_trial_caches(user: User) -> None:
+    """Clear the cached usage summary so an extended trial_days_remaining shows immediately."""
+    redis = get_redis()
+    if redis is None:
+        return
+    try:
+        period_start = _billing_period_start(user)
+        period_key = period_start.strftime("%Y%m%d")
+        await redis.delete(usage_summary_key(user.id, period_key))
+    except Exception as e:
+        logger.warning("Redis usage summary invalidation failed: %s", e)
 
 
 async def increment_usage_count(user_id, action: str, user: User) -> None:

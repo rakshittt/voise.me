@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth import get_current_user
+from auth import get_current_user, invalidate_user_cache
 from db.session import get_session
 from models.generation import Generation
 from models.user import User
@@ -39,7 +39,7 @@ from services.generation.prompt_builder import build_refine_system_prompt, build
 from services.llm.router import llm_call
 from services.rate_limiter import check_rate_limit
 from services.usage import log_usage
-from services.usage_limits import check_usage_limit
+from services.usage_limits import check_usage_limit, invalidate_trial_caches, maybe_extend_trial
 from services.voice_dna.embedder import embed_text
 from services.voice_dna.scorer import score_post
 
@@ -158,8 +158,14 @@ async def generate(
             user=user,
         )
 
+    trial_extended = maybe_extend_trial(user)
+
     await session.commit()
     await session.refresh(generation)
+
+    if trial_extended:
+        await invalidate_user_cache(user.clerk_user_id)
+        await invalidate_trial_caches(user)
 
     return GenerateResponse(
         generation_id=generation.id,
@@ -173,6 +179,7 @@ async def generate(
             )
             for item in variants_json
         ],
+        trial_extended=trial_extended,
     )
 
 
@@ -252,13 +259,20 @@ async def repurpose(
         user=user,
     )
 
+    trial_extended = maybe_extend_trial(user)
+
     await session.commit()
     await session.refresh(generation)
+
+    if trial_extended:
+        await invalidate_user_cache(user.clerk_user_id)
+        await invalidate_trial_caches(user)
 
     return RepurposeResponse(
         generation_id=generation.id,
         content=content,
         voice_match_score=score_result.overall_score,
+        trial_extended=trial_extended,
     )
 
 

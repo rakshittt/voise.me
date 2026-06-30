@@ -4,7 +4,7 @@ import { VoiseLogo } from "@/components/ui/VoiseLogo";
 const LINKS = [
   { href: "/features", label: "Features" },
   { href: "/pricing",  label: "Pricing"  },
-  { href: "/audit",    label: "Free audit" },
+  { href: "/tools",    label: "Free tools" },
 ];
 
 export function MarketingNav() {

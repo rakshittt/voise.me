@@ -488,6 +488,19 @@ a:hover {
   .hero-section > * { padding-left: 16px !important; padding-right: 16px !important; }
 }
 
+/* Free-tool pages (hub + individual tools) - fill more of the viewport on desktop */
+.tool-page-shell {
+  width: 80%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+@media (max-width: 900px) {
+  .tool-page-shell { width: 90%; }
+}
+@media (max-width: 560px) {
+  .tool-page-shell { width: 100%; padding-left: var(--ds-space-200); padding-right: var(--ds-space-200); }
+}
+
 /* Reduced motion - disable all framer-motion + CSS animations */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

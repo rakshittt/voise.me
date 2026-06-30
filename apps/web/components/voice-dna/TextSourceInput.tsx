@@ -15,6 +15,7 @@ interface ParsedResult {
 interface Props {
   sourceType: "text" | "transcript";
   onImport: (chunks: string[]) => void;
+  initialValue?: string;
 }
 
 const CONFIG = {
@@ -40,9 +41,9 @@ function confidenceLabel(count: number): { label: string; appearance: "success" 
   return { label: "Enough to start", appearance: "removed" };
 }
 
-export function TextSourceInput({ sourceType, onImport }: Props) {
+export function TextSourceInput({ sourceType, onImport, initialValue }: Props) {
   const cfg = CONFIG[sourceType];
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialValue ?? "");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ParsedResult | null>(null);
   const [error, setError] = useState("");

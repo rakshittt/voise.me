@@ -26,7 +26,9 @@ class Settings(BaseSettings):
     # Upstash (prod): rediss://default:<TOKEN>@<host>.upstash.io:<port>
     REDIS_URL: str = "redis://localhost:6379/0"
 
-    TRIAL_DAYS: int = 30
+    # Base trial on signup; each day of generation activity earns +1 day, up to TRIAL_MAX_DAYS.
+    TRIAL_BASE_DAYS: int = 15
+    TRIAL_MAX_DAYS: int = 30
     APP_URL: str = "http://localhost:3000"
 
     LOG_PROMPTS: bool = False

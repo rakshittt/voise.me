@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { AuditTool } from "./AuditTool";
 import { PublicToolHeader } from "@/components/marketing/PublicToolHeader";
 import { RelatedTools } from "@/components/marketing/RelatedTools";
+import { HookCheckerTool } from "./HookCheckerTool";
 
 export const metadata: Metadata = {
-  title: "Free LinkedIn Voice Audit | Voise",
-  description: "Paste 5-20 of your LinkedIn posts and get an instant snapshot of your hook style, structure, and tone. Free, no account needed.",
+  title: "Free LinkedIn Hook Checker | Voise",
+  description: "Score your opening line against the patterns that earn the click on \"see more.\" Free, instant, no account needed.",
 };
 
-export default function AuditPage() {
+export default function HookCheckerPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--ds-background-neutral-subtle)" }}>
       <PublicToolHeader />
@@ -17,20 +17,20 @@ export default function AuditPage() {
         <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center", display: "flex", flexDirection: "column", gap: "var(--ds-space-150)" }}>
           <div>
             <span style={{ display: "inline-block", fontSize: "var(--ds-font-size-075)", fontWeight: "var(--ds-font-weight-bold)", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ds-text-brand)", background: "var(--ds-background-brand-subtle)", padding: "var(--ds-space-050) var(--ds-space-150)", borderRadius: "var(--ds-radius-200)" }}>
-              Free voice audit
+              Free tool
             </span>
           </div>
           <h1 style={{ margin: 0, fontSize: "var(--ds-font-size-600)", fontWeight: "var(--ds-font-weight-bold)", color: "var(--ds-text)", lineHeight: "var(--ds-line-height-500)" }}>
-            What does your LinkedIn voice sound like?
+            Will your hook earn the click on &ldquo;see more&rdquo;?
           </h1>
           <p style={{ margin: 0, color: "var(--ds-text-subtle)", fontSize: "var(--ds-font-size-200)", lineHeight: "var(--ds-line-height-400)" }}>
-            Paste 5–20 of your LinkedIn posts. We&apos;ll analyze 3 key dimensions of your writing style - instantly, no account needed.
+            Paste your post. We&apos;ll score your opening line against the patterns that make people stop scrolling - instantly, no account needed.
           </p>
         </div>
 
-        <AuditTool />
+        <HookCheckerTool />
 
-        <RelatedTools currentHref="/audit" />
+        <RelatedTools currentHref="/hook-checker" />
       </main>
     </div>
   );

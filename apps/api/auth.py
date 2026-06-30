@@ -2,7 +2,7 @@ import base64
 import json
 import logging
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Annotated
 
 import httpx
@@ -147,6 +147,9 @@ def _user_to_dict(user: User) -> dict:
         "plan": user.plan,
         "is_admin": user.is_admin,
         "trial_ends_at": user.trial_ends_at.isoformat() if user.trial_ends_at else None,
+        "trial_last_extended_date": (
+            user.trial_last_extended_date.isoformat() if user.trial_last_extended_date else None
+        ),
         "created_at": user.created_at.isoformat() if user.created_at else None,
         "creator_context": user.creator_context,
     }
@@ -162,6 +165,8 @@ def _dict_to_user(data: dict) -> User:
     user.is_admin = data.get("is_admin", False)
     trial = data.get("trial_ends_at")
     user.trial_ends_at = datetime.fromisoformat(trial) if trial else None
+    last_extended = data.get("trial_last_extended_date")
+    user.trial_last_extended_date = date.fromisoformat(last_extended) if last_extended else None
     created = data.get("created_at")
     user.created_at = datetime.fromisoformat(created) if created else None
     user.creator_context = data.get("creator_context")
@@ -219,7 +224,7 @@ async def get_current_user(
 
     if user is None:
         email, name = await _fetch_clerk_user(clerk_user_id)
-        trial_ends = datetime.now(UTC) + timedelta(days=settings.TRIAL_DAYS)
+        trial_ends = datetime.now(UTC) + timedelta(days=settings.TRIAL_BASE_DAYS)
         user = User(
             clerk_user_id=clerk_user_id,
             email=email,

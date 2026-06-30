@@ -2,19 +2,32 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { TRIAL_EXTENDED_EVENT } from "@/lib/trialEvents";
 
 export function TrialBanner() {
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
+  const [justExtended, setJustExtended] = useState(false);
 
   useEffect(() => {
-    fetch("/api/usage")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.in_trial && typeof d.trial_days_remaining === "number") {
-          setDaysLeft(d.trial_days_remaining);
-        }
-      })
-      .catch(() => {});
+    const fetchSummary = () =>
+      fetch("/api/usage")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.in_trial && typeof d.trial_days_remaining === "number") {
+            setDaysLeft(d.trial_days_remaining);
+          }
+        })
+        .catch(() => {});
+
+    fetchSummary();
+
+    const onTrialExtended = () => {
+      setJustExtended(true);
+      fetchSummary();
+      setTimeout(() => setJustExtended(false), 4000);
+    };
+    window.addEventListener(TRIAL_EXTENDED_EVENT, onTrialExtended);
+    return () => window.removeEventListener(TRIAL_EXTENDED_EVENT, onTrialExtended);
   }, []);
 
   if (daysLeft === null) return null;
@@ -61,6 +74,17 @@ export function TrialBanner() {
             ? "Your free trial ends today."
             : `Free trial: ${daysLeft} day${daysLeft !== 1 ? "s" : ""} remaining - you have full Growth plan access.`}
         </span>
+
+        {justExtended && (
+          <span
+            style={{
+              fontWeight: "var(--ds-font-weight-semibold)",
+              color: "var(--ds-text-success)",
+            }}
+          >
+            +1 day for posting today
+          </span>
+        )}
       </div>
 
       <Link

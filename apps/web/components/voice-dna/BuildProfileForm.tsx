@@ -13,6 +13,20 @@ import { Lozenge } from "@/components/ui/Lozenge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import Heading from "@/components/ui/Heading";
 import { Card } from "@/components/ui/Card";
+import { getToolHandoff, clearToolHandoff } from "@/lib/toolHandoff";
+
+const TOOL_LABELS: Record<string, string> = {
+  audit: "Voice Audit",
+};
+
+function computeHandoffPrefill(): { value: string; source: string | null } {
+  if (typeof window === "undefined") return { value: "", source: null };
+  const handoff = getToolHandoff();
+  if (handoff?.kind === "posts" && handoff.content.trim()) {
+    return { value: handoff.content, source: handoff.source };
+  }
+  return { value: "", source: null };
+}
 
 type Mode = "select" | "export" | "manual" | "text_paste" | "transcript" | "url_import" | "pdf";
 
@@ -149,7 +163,8 @@ const INSIGHT_MESSAGES = [
 
 export function BuildProfileForm() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("select");
+  const [handoffPrefill] = useState(() => computeHandoffPrefill());
+  const [mode, setMode] = useState<Mode>(() => (handoffPrefill.value ? "text_paste" : "select"));
   const [postCount, setPostCount] = useState(0);
   const [polling, setPolling] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -203,6 +218,8 @@ export function BuildProfileForm() {
   );
 
   useEffect(() => () => { stopPolling(); }, [stopPolling]);
+
+  useEffect(() => { clearToolHandoff(); }, []);
 
   const SOURCE_TYPE_MAP: Partial<Record<Mode, string>> = {
     export: "linkedin_export",
@@ -395,8 +412,18 @@ export function BuildProfileForm() {
         </div>
       </div>
 
+      {mode === "text_paste" && handoffPrefill.value && (
+        <div>
+          <Lozenge appearance="inprogress">
+            Picked up from {TOOL_LABELS[handoffPrefill.source ?? ""] ?? "the tool"} you just used
+          </Lozenge>
+        </div>
+      )}
+
       {mode === "export" && <LinkedInExportUpload onImport={handleBuild} />}
-      {mode === "text_paste" && <TextSourceInput sourceType="text" onImport={handleBuild} />}
+      {mode === "text_paste" && (
+        <TextSourceInput sourceType="text" onImport={handleBuild} initialValue={handoffPrefill.value || undefined} />
+      )}
       {mode === "url_import" && <UrlImportInput onImport={handleBuild} />}
       {mode === "transcript" && <TextSourceInput sourceType="transcript" onImport={handleBuild} />}
       {mode === "pdf" && <PdfUploadInput onImport={handleBuild} />}

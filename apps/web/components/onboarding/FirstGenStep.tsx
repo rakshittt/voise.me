@@ -12,6 +12,25 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Lozenge } from "@/components/ui/Lozenge";
 import Heading from "@/components/ui/Heading";
 import { StepIndicator } from "./StepIndicator";
+import { getToolHandoff, clearToolHandoff } from "@/lib/toolHandoff";
+
+const TOOL_LABELS: Record<string, string> = {
+  write: "Post Writer",
+  "hook-checker": "Hook Checker",
+  "post-checker": "Post Health Checker",
+  "character-counter": "Character Counter",
+  audit: "Voice Audit",
+};
+
+function computeInitialIdea(): { value: string; source: string | null } {
+  if (typeof window === "undefined") return { value: DEFAULT_EXAMPLE, source: null };
+  const handoff = getToolHandoff();
+  if (handoff?.kind === "idea" && handoff.content.trim()) {
+    return { value: handoff.content, source: handoff.source };
+  }
+  const useCase = localStorage.getItem("voise_use_case") ?? "default";
+  return { value: USE_CASE_EXAMPLES[useCase] ?? DEFAULT_EXAMPLE, source: null };
+}
 
 const USE_CASE_EXAMPLES: Record<string, string> = {
   founder:
@@ -43,21 +62,15 @@ type ViewState =
 
 export function FirstGenStep() {
   const router = useRouter();
-  const [idea, setIdea] = useState(() => {
-    if (typeof window === "undefined") return DEFAULT_EXAMPLE;
-    const useCase = localStorage.getItem("voise_use_case") ?? "default";
-    return USE_CASE_EXAMPLES[useCase] ?? DEFAULT_EXAMPLE;
-  });
-  const [view, setView] = useState<ViewState>(() => {
-    if (typeof window === "undefined") return { type: "idle", prefilled: DEFAULT_EXAMPLE };
-    const useCase = localStorage.getItem("voise_use_case") ?? "default";
-    return { type: "idle", prefilled: USE_CASE_EXAMPLES[useCase] ?? DEFAULT_EXAMPLE };
-  });
+  const [idea, setIdea] = useState(() => computeInitialIdea().value);
+  const [view, setView] = useState<ViewState>(() => ({ type: "idle", prefilled: computeInitialIdea().value }));
+  const [handoffSource] = useState<string | null>(() => computeInitialIdea().source);
   const [sessionId, setSessionId] = useState<string>("");
   const [shownAt, setShownAt] = useState<number>(0);
 
   useEffect(() => {
     localStorage.setItem("voise_onboarding_step", "4");
+    clearToolHandoff();
   }, []);
 
   const handleGenerate = async () => {
@@ -160,9 +173,17 @@ export function FirstGenStep() {
       <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: "var(--ds-space-200)" }}>
         <StepIndicator current={4} total={4} />
         <Heading size="xlarge" as="h1">Generate your first post</Heading>
-        <p style={{ margin: 0, color: "var(--ds-text-subtle)", fontSize: "var(--ds-font-size-100)" }}>
-          We&apos;ve pre-filled an idea based on your use case. Edit it or use it as-is.
-        </p>
+        {handoffSource ? (
+          <div>
+            <Lozenge appearance="inprogress">
+              Picked up from {TOOL_LABELS[handoffSource] ?? "the tool"} you just used
+            </Lozenge>
+          </div>
+        ) : (
+          <p style={{ margin: 0, color: "var(--ds-text-subtle)", fontSize: "var(--ds-font-size-100)" }}>
+            We&apos;ve pre-filled an idea based on your use case. Edit it or use it as-is.
+          </p>
+        )}
       </div>
 
       {view.type === "error" && (

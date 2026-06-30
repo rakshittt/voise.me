@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RepurposeResponse } from "@/lib/types";
+import { notifyTrialExtended } from "@/lib/trialEvents";
 import { UpgradeModal } from "./UpgradeModal";
 import { RefinementChat } from "./RefinementChat";
 import { Button } from "@/components/ui/Button";
@@ -62,6 +63,7 @@ export function RepurposeForm() {
       setDisplayScore(data.voice_match_score);
       setRefineOpen(false);
       setView({ type: "result", data });
+      if (data.trial_extended) notifyTrialExtended();
     } catch (err) {
       setView({ type: "error", message: err instanceof Error ? err.message : "Something went wrong" });
     }

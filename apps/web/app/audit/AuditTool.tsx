@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { TextArea } from "@/components/ui/TextArea";
 import { SectionMessage } from "@/components/ui/SectionMessage";
 import { Lozenge } from "@/components/ui/Lozenge";
 import { Spinner } from "@/components/ui/Spinner";
 import { Card } from "@/components/ui/Card";
+import { PublicToolCTA } from "@/components/marketing/PublicToolCTA";
 
 interface AuditResult {
   hook_distribution: Record<string, number>;
@@ -60,7 +60,7 @@ function BarChart({ data }: { data: Record<string, number> }) {
   );
 }
 
-function ResultDisplay({ result }: { result: AuditResult }) {
+function ResultDisplay({ result, posts }: { result: AuditResult; posts: string }) {
   const dominantHook = Object.entries(result.hook_distribution).sort(([, a], [, b]) => b - a)[0]?.[0];
   const dominantPattern = result.structural_pattern.dominant;
   const formality = result.vocabulary_register.formality_score ?? 0.5;
@@ -138,27 +138,14 @@ function ResultDisplay({ result }: { result: AuditResult }) {
         </Card>
       </div>
 
-      {/* CTA */}
-      <div style={{ backgroundColor: "var(--ds-background-brand-bold)", borderRadius: "var(--ds-radius-300)", padding: "var(--ds-space-400)", textAlign: "center", display: "flex", flexDirection: "column", gap: "var(--ds-space-150)" }}>
-        <h3 style={{ margin: 0, fontWeight: "var(--ds-font-weight-bold)", fontSize: "var(--ds-font-size-300)", color: "var(--ds-text-inverse)" }}>Get your full Voice DNA</h3>
-        <p style={{ margin: 0, color: "rgba(255,255,255,0.8)", fontSize: "var(--ds-font-size-100)" }}>
-          This is 3 of 7 dimensions. Sign up to analyze sentence rhythm, paragraph structure, CTA style, and emotional register - and generate posts scored against all 7.
-        </p>
-        <div style={{ display: "flex", gap: "var(--ds-space-150)", justifyContent: "center", flexWrap: "wrap" }}>
-          <Link
-            href="/sign-up"
-            style={{ padding: "var(--ds-space-100) var(--ds-space-250)", background: "var(--ds-surface)", color: "var(--ds-text-brand)", fontWeight: "var(--ds-font-weight-semibold)", borderRadius: "var(--ds-radius-100)", fontSize: "var(--ds-font-size-100)", textDecoration: "none" }}
-          >
-            Build your full profile - free →
-          </Link>
-          <Link
-            href="/sign-in"
-            style={{ padding: "var(--ds-space-100) var(--ds-space-250)", border: "1px solid rgba(255,255,255,0.4)", color: "var(--ds-text-inverse)", fontWeight: "var(--ds-font-weight-semibold)", borderRadius: "var(--ds-radius-100)", fontSize: "var(--ds-font-size-100)", textDecoration: "none" }}
-          >
-            Sign in
-          </Link>
-        </div>
-      </div>
+      <PublicToolCTA
+        title="Get your full Voice DNA"
+        body="This is 3 of 7 dimensions. Sign up to analyze sentence rhythm, paragraph structure, CTA style, and emotional register - and generate posts scored against all 7."
+        handoffContent={posts}
+        handoffSource="audit"
+        handoffKind="posts"
+        primaryLabel="Build my full Voice DNA →"
+      />
     </div>
   );
 }
@@ -211,7 +198,7 @@ export function AuditTool() {
   if (result) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "var(--ds-space-200)" }}>
-        <ResultDisplay result={result} />
+        <ResultDisplay result={result} posts={posts} />
         <Button appearance="subtle" shouldFitContainer onClick={() => { setResult(null); setPosts(""); }}>
           Analyze different posts
         </Button>

@@ -40,12 +40,14 @@ class VariantResponse(BaseModel):
 class GenerateResponse(BaseModel):
     generation_id: uuid.UUID
     variants: list[VariantResponse]
+    trial_extended: bool = False
 
 
 class RepurposeResponse(BaseModel):
     generation_id: uuid.UUID
     content: str
     voice_match_score: int
+    trial_extended: bool = False
 
 
 class RegenerateVariantRequest(BaseModel):

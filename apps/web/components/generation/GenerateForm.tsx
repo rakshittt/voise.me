@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import type { GenerationResponse, GenerationVariant, RegenerateVariantResponse } from "@/lib/types";
+import { notifyTrialExtended } from "@/lib/trialEvents";
 import { UpgradeModal } from "./UpgradeModal";
 import { VariantCard } from "./VariantCard";
 import { Button } from "@/components/ui/Button";
@@ -78,6 +79,7 @@ export function GenerateForm() {
         .sort((a, b) => b.voice_match_score - a.voice_match_score);
       setVariants(sorted);
       setView({ type: "result", data, generationId: data.generation_id });
+      if (data.trial_extended) notifyTrialExtended();
 
       // Reset session tracking for this new generate→interact session
       setSessionId(crypto.randomUUID());

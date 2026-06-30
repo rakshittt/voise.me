@@ -7,8 +7,18 @@ const COLS = [
     links: [
       { href: "/features",    label: "Features"        },
       { href: "/pricing",     label: "Pricing"         },
-      { href: "/audit",       label: "Free voice audit" },
       { href: "/how-it-works",label: "How it works"    },
+    ],
+  },
+  {
+    heading: "Free tools",
+    links: [
+      { href: "/tools",             label: "All free tools"    },
+      { href: "/write",             label: "Post writer"       },
+      { href: "/hook-checker",      label: "Hook checker"      },
+      { href: "/post-checker",      label: "Post health checker" },
+      { href: "/character-counter", label: "Character counter" },
+      { href: "/audit",             label: "Voice audit"       },
     ],
   },
   {
@@ -34,7 +44,7 @@ export function MarketingFooter() {
   return (
     <footer style={{ backgroundColor: "var(--ds-surface-sunken)", borderTop: "1px solid var(--ds-border)" }}>
       <div style={{ maxWidth: 1120, margin: "0 auto", padding: "56px var(--ds-space-300) 32px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1.6fr 1fr 1fr 1fr 1fr", gap: 40, marginBottom: 48 }}>
           {/* Brand */}
           <div>
             <VoiseLogo markSize={26} fontSize={15} gap={8} />

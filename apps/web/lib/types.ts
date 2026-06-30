@@ -100,12 +100,14 @@ export interface GenerationVariant {
 export interface GenerationResponse {
   generation_id: string;
   variants: GenerationVariant[];
+  trial_extended?: boolean;
 }
 
 export interface RepurposeResponse {
   generation_id: string;
   content: string;
   voice_match_score: number;
+  trial_extended?: boolean;
 }
 
 export interface RegenerateVariantResponse {

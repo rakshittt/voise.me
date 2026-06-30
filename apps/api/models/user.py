@@ -1,6 +1,7 @@
 import uuid
+from datetime import date
 
-from sqlalchemy import Boolean, DateTime, String, func
+from sqlalchemy import Boolean, Date, DateTime, String, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -16,6 +17,8 @@ class User(Base):
     name: Mapped[str | None] = mapped_column(String(255))
     plan: Mapped[str] = mapped_column(String(50), nullable=False, default="starter")
     trial_ends_at: Mapped[DateTime | None] = mapped_column(DateTime(timezone=True))
+    # Last calendar date the trial was extended for generation activity (one +1 day per date)
+    trial_last_extended_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     # Creator background injected into generation prompts
     creator_context: Mapped[dict | None] = mapped_column(JSONB, nullable=True)

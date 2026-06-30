@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import { toUnicodeBold, toUnicodeItalic, LINKEDIN_FORMAT_EMOJIS } from "@/lib/linkedinFormat";
 
 /* ── LinkedIn-accurate color constants ──────────────────────────────────── */
 const LI = {
@@ -187,6 +188,207 @@ function ReactionBubble({ emoji, bg }: { emoji: string; bg: string }) {
   );
 }
 
+/* ── Format toolbar (dashboard-styled) ──────────────────────────────────── */
+function FormatToolBtn({
+  label,
+  title,
+  onClick,
+  active,
+  mono,
+}: {
+  label: React.ReactNode;
+  title: string;
+  onClick: () => void;
+  active?: boolean;
+  mono?: boolean;
+}) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        minWidth: 28,
+        height: 28,
+        padding: "0 8px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: "var(--ds-radius-100)",
+        border: `1px solid ${active ? "var(--ds-border-brand)" : hover ? "var(--ds-border)" : "transparent"}`,
+        backgroundColor: active
+          ? "var(--ds-background-brand-subtle)"
+          : hover
+            ? "var(--ds-background-neutral-subtle)"
+            : "transparent",
+        color: active ? "var(--ds-text-brand)" : "var(--ds-text-subtle)",
+        fontSize: mono ? 12 : 13,
+        fontWeight: mono ? 400 : 700,
+        fontFamily: mono ? "var(--ds-font-family-mono, monospace)" : "inherit",
+        cursor: "pointer",
+        whiteSpace: "nowrap",
+        flexShrink: 0,
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function FormatToolbar({
+  textareaRef,
+  content,
+  onContentChange,
+}: {
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  content: string;
+  onContentChange: (v: string) => void;
+}) {
+  const [showEmoji, setShowEmoji] = useState(false);
+  const emojiRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showEmoji) return;
+    function handler(e: MouseEvent) {
+      if (emojiRef.current && !emojiRef.current.contains(e.target as Node)) {
+        setShowEmoji(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showEmoji]);
+
+  const insertAtCursor = useCallback(
+    (insert: string) => {
+      const el = textareaRef.current;
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const next = content.slice(0, start) + insert + content.slice(end);
+      onContentChange(next);
+      requestAnimationFrame(() => {
+        el.focus();
+        el.setSelectionRange(start + insert.length, start + insert.length);
+      });
+    },
+    [content, onContentChange, textareaRef]
+  );
+
+  const transformSelection = useCallback(
+    (transform: (s: string) => string) => {
+      const el = textareaRef.current;
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const selected = content.slice(start, end);
+      if (!selected) return;
+      const transformed = transform(selected);
+      const next = content.slice(0, start) + transformed + content.slice(end);
+      onContentChange(next);
+      requestAnimationFrame(() => {
+        el.focus();
+        el.setSelectionRange(start, start + [...transformed].length);
+      });
+    },
+    [content, onContentChange, textareaRef]
+  );
+
+  const prefixLines = useCallback(
+    (prefix: string | ((i: number) => string)) => {
+      const el = textareaRef.current;
+      if (!el) return;
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      const selected =
+        content.slice(start, end) ||
+        content.slice(
+          content.lastIndexOf("\n", start - 1) + 1,
+          content.indexOf("\n", start) === -1 ? content.length : content.indexOf("\n", start)
+        );
+      const lines = selected.split("\n");
+      const prefixed = lines
+        .map((line, i) => (typeof prefix === "function" ? prefix(i + 1) : prefix) + line)
+        .join("\n");
+      const actualStart = content.slice(0, start).lastIndexOf("\n") + 1;
+      const actualEnd = end || content.indexOf("\n", start) === -1 ? content.length : content.indexOf("\n", start);
+      const next = content.slice(0, actualStart) + prefixed + content.slice(actualEnd);
+      onContentChange(next);
+    },
+    [content, onContentChange, textareaRef]
+  );
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        padding: "4px 0 8px",
+        flexWrap: "wrap",
+      }}
+    >
+      <FormatToolBtn label="B" title="Bold (select text first)" onClick={() => transformSelection(toUnicodeBold)} />
+      <FormatToolBtn label={<em>I</em>} title="Italic (select text first)" onClick={() => transformSelection(toUnicodeItalic)} />
+
+      <div style={{ width: 1, height: 18, backgroundColor: "var(--ds-border)", margin: "0 4px" }} />
+
+      <FormatToolBtn label="•" title="Bullet point" mono onClick={() => insertAtCursor("\n• ")} />
+      <FormatToolBtn label="1." title="Numbered list" mono onClick={() => prefixLines((i) => `${i}. `)} />
+      <FormatToolBtn label="—" title="Divider line" mono onClick={() => insertAtCursor("\n\n——————————————\n\n")} />
+
+      <div style={{ width: 1, height: 18, backgroundColor: "var(--ds-border)", margin: "0 4px" }} />
+
+      <div ref={emojiRef} style={{ position: "relative" }}>
+        <FormatToolBtn label="😊" title="Insert emoji" onClick={() => setShowEmoji((v) => !v)} active={showEmoji} />
+        {showEmoji && (
+          <div
+            style={{
+              position: "absolute",
+              top: "calc(100% + 6px)",
+              left: 0,
+              zIndex: 50,
+              backgroundColor: "var(--ds-surface)",
+              border: "1px solid var(--ds-border)",
+              borderRadius: "var(--ds-radius-200)",
+              padding: 10,
+              display: "grid",
+              gridTemplateColumns: "repeat(6, 1fr)",
+              gap: 2,
+              boxShadow: "var(--ds-shadow-overlay, 0 4px 20px rgba(0,0,0,0.15))",
+              width: 220,
+            }}
+          >
+            {LINKEDIN_FORMAT_EMOJIS.map((e) => (
+              <button
+                key={e}
+                type="button"
+                onClick={() => {
+                  insertAtCursor(e);
+                  setShowEmoji(false);
+                }}
+                style={{
+                  fontSize: 20,
+                  padding: "4px 2px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  borderRadius: "var(--ds-radius-100)",
+                  lineHeight: 1,
+                }}
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main component ─────────────────────────────────────────────────────── */
 export function LinkedInPreview({
   content,
@@ -201,6 +403,7 @@ export function LinkedInPreview({
 }) {
   const { user } = useUser();
   const [expanded, setExpanded] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const TRUNCATE_AT = 280;
   const shouldTruncate = !editing && content.length > TRUNCATE_AT;
@@ -284,25 +487,31 @@ export function LinkedInPreview({
       {/* ── Post body ── */}
       <div style={{ padding: "10px 16px 8px" }}>
         {editing ? (
-          <textarea
-            style={{
-              width: "100%",
-              minHeight: 200,
-              fontSize: 14,
-              color: LI.ink,
-              lineHeight: "1.43",
-              resize: "none",
-              outline: "none",
-              border: "none",
-              background: "transparent",
-              fontFamily: LI.font,
-              boxSizing: "border-box",
-              padding: 0,
-            }}
-            value={content}
-            onChange={(e) => onContentChange?.(e.target.value)}
-            autoFocus
-          />
+          <>
+            {onContentChange && (
+              <FormatToolbar textareaRef={textareaRef} content={content} onContentChange={onContentChange} />
+            )}
+            <textarea
+              ref={textareaRef}
+              style={{
+                width: "100%",
+                minHeight: 200,
+                fontSize: 14,
+                color: LI.ink,
+                lineHeight: "1.43",
+                resize: "none",
+                outline: "none",
+                border: "none",
+                background: "transparent",
+                fontFamily: LI.font,
+                boxSizing: "border-box",
+                padding: 0,
+              }}
+              value={content}
+              onChange={(e) => onContentChange?.(e.target.value)}
+              autoFocus
+            />
+          </>
         ) : (
           <p style={{ margin: 0, fontSize: 14, color: LI.ink, whiteSpace: "pre-wrap", lineHeight: "1.43" }}>
             {displayText}
