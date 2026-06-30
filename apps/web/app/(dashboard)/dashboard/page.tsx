@@ -6,40 +6,30 @@ import { VoiceStrengthWidget } from "@/components/voice-dna/VoiceStrengthWidget"
 import { NextIdeaWidget } from "@/components/ideas/NextIdeaWidget";
 import { Lozenge } from "@/components/ui/Lozenge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import type { VoiceProfileStatus, GenerationHistoryItem } from "@/lib/types";
+import type { GenerationHistoryItem } from "@/lib/types";
+import { getVoiceProfileStatus, getUsageSummary } from "@/lib/server-data";
 
-interface UsageSummary {
-  plan: string;
-  generates_used: number;
-  generates_limit: number;
-  repurposes_used: number;
-  repurposes_limit: number;
+async function fetchHistory(token: string): Promise<GenerationHistoryItem[]> {
+  const base = process.env.API_URL ?? "http://localhost:8000";
+  try {
+    const res = await fetch(`${base}/generate/history?limit=10&offset=0`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    });
+    return res.ok ? res.json() : [];
+  } catch {
+    return [];
+  }
 }
 
 async function fetchDashboardData(token: string) {
-  const base = process.env.API_URL ?? "http://localhost:8000";
-  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-
-  const [profileRes, historyRes, usageRes] = await Promise.allSettled([
-    fetch(`${base}/voice-profile/status`, { headers, cache: "no-store" }),
-    fetch(`${base}/generate/history?limit=10&offset=0`, { headers, cache: "no-store" }),
-    fetch(`${base}/usage/summary`, { headers, cache: "no-store" }),
+  // profile/usage are deduped via React cache() - OnboardingGuard already
+  // triggered these fetches in the layout, so these calls are free.
+  const [profile, history, usage] = await Promise.all([
+    getVoiceProfileStatus(),
+    fetchHistory(token),
+    getUsageSummary(),
   ]);
-
-  const profile: VoiceProfileStatus | null =
-    profileRes.status === "fulfilled" && profileRes.value.ok
-      ? await profileRes.value.json()
-      : null;
-
-  const history: GenerationHistoryItem[] =
-    historyRes.status === "fulfilled" && historyRes.value.ok
-      ? await historyRes.value.json()
-      : [];
-
-  const usage: UsageSummary | null =
-    usageRes.status === "fulfilled" && usageRes.value.ok
-      ? await usageRes.value.json()
-      : null;
 
   return { profile, history, usage };
 }

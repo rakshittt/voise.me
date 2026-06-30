@@ -738,7 +738,11 @@ export function IdeaGenerator() {
       </Button>
 
       {/* History - only shown in idle state */}
-      {view.type === "idle" && <PastIdeaSets onReuse={handleReuse} />}
+      {view.type === "idle" && (
+        <div style={{ marginTop: "var(--ds-space-200)" }}>
+          <PastIdeaSets onReuse={handleReuse} />
+        </div>
+      )}
     </div>
   );
 }

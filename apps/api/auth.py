@@ -62,6 +62,11 @@ async def _get_jwks() -> dict:
 def _jwk_to_pem(jwk_key: dict) -> str:
     """Convert a JWK RSA public key to PEM using cryptography directly.
     python-jose's internal JWK->PEM path produces MalformedFraming on newer cryptography builds."""
+    if jwk_key.get("kty") != "RSA":
+        raise JWTError(f"Unsupported JWK key type: {jwk_key.get('kty')!r}, expected RSA")
+    if not jwk_key.get("n") or not jwk_key.get("e"):
+        raise JWTError("JWK missing required RSA modulus/exponent fields")
+
     def _b64url_to_int(s: str) -> int:
         padding = 4 - len(s) % 4
         if padding != 4:
@@ -92,8 +97,19 @@ async def _verify_clerk_token(token: str) -> dict:
             token,
             pem,
             algorithms=["RS256"],
+            # Clerk session tokens don't carry a standard `aud` claim (no
+            # custom JWT template configured), so there's nothing to check
+            # there. `azp` (authorized party / origin) is what Clerk actually
+            # sets - validate it the same way Clerk's own SDKs do: only
+            # enforce when the claim is present, against our known origins.
             options={"verify_aud": False},
         )
+
+        azp = claims.get("azp")
+        if azp and azp not in settings.allowed_origins_list:
+            logger.warning(f"JWT azp claim {azp!r} not in allowed origins")
+            raise JWTError(f"Token authorized party {azp!r} not recognized")
+
         return claims
     except JWTError as e:
         logger.warning(f"JWT verification failed: {e}")

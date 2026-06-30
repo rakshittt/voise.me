@@ -166,13 +166,17 @@ async def _batch_novelty_scores(
     embeddings: list[list[float] | None],
     session: AsyncSession,
 ) -> list[float]:
-    """Run all pgvector nearest-neighbour queries in parallel via asyncio.gather.
+    """Run all pgvector nearest-neighbour queries against the shared session.
 
-    Previously sequential (15 round-trips); now all fire at once.
+    Must be sequential, not gathered: AsyncSession raises InvalidRequestError
+    ("concurrent operations are not permitted") if two coroutines call
+    execute() on it at the same time - confirmed live, not theoretical. A
+    previous version of this used asyncio.gather here, which intermittently
+    threw on every candidate and silently fell back to a neutral 0.5 novelty
+    score via the except clause below, plus contributed to the page feeling
+    slow from the failed/retried queries.
     """
-    return list(
-        await asyncio.gather(*[_novelty_for_one(user_id, emb, session) for emb in embeddings])
-    )
+    return [await _novelty_for_one(user_id, emb, session) for emb in embeddings]
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

@@ -113,6 +113,28 @@ async def set_cached_profile(profile: "VoiceProfile") -> None:
         logger.warning("Redis voice profile write failed: %s", e)
 
 
+async def get_cached_status_and_profile(
+    user_id: uuid.UUID,
+) -> tuple[str | None, "VoiceProfile | None"]:
+    """Fetch both cache keys in a single Redis round trip (MGET) instead of two GETs.
+
+    Used by the /status polling endpoint, which needs the fast-expiring status
+    key for freshness and the longer-lived profile key for the response body.
+    """
+    redis = get_redis()
+    if redis is None:
+        return None, None
+    try:
+        status_raw, profile_raw = await redis.mget(
+            voice_profile_status_key(user_id), voice_profile_key(user_id)
+        )
+        profile = _dict_to_profile(json.loads(profile_raw)) if profile_raw else None
+        return status_raw, profile
+    except Exception as e:
+        logger.warning("Redis voice profile status+profile read failed: %s", e)
+        return None, None
+
+
 async def set_cached_status(user_id: uuid.UUID, status_str: str) -> None:
     redis = get_redis()
     if redis is None:

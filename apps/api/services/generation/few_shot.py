@@ -8,9 +8,10 @@ Three-stage strategy:
            surface above unreviewed ones (new).
   Fallback: Global cosine similarity if cluster/argument-type results are thin.
 """
+import asyncio
 import uuid
 
-from sqlalchemy import select
+from sqlalchemy import case, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.user_post import UserPost
@@ -21,6 +22,10 @@ async def _detect_input_argument_type(idea_text: str) -> str:
     """Classify the generation input so we can match structurally similar examples."""
     types = await classify_argument_types([idea_text])
     return types[0] if types else "problem_insight_proof"
+
+
+async def _no_arg_type() -> str | None:
+    return None
 
 
 async def get_similar_posts(
@@ -39,74 +44,41 @@ async def get_similar_posts(
     if not input_embedding:
         return [], []
 
-    # Stage 1: detect topic cluster of nearest post
-    nearest_result = await session.execute(
+    # Stage 1 (DB) and Stage 2 (LLM classification) are independent - run together.
+    nearest_coro = session.execute(
         select(UserPost.cluster_id)
         .where(UserPost.user_id == user_id, UserPost.cluster_id.is_not(None))
         .order_by(UserPost.content_embedding.op("<=>")(input_embedding))
         .limit(1)
     )
+    arg_type_coro = _detect_input_argument_type(input_text) if input_text else _no_arg_type()
+    nearest_result, input_arg_type = await asyncio.gather(nearest_coro, arg_type_coro)
     nearest_cluster = nearest_result.scalar_one_or_none()
 
-    # Stage 2: detect argument type of the input idea
-    input_arg_type: str | None = None
-    if input_text:
-        input_arg_type = await _detect_input_argument_type(input_text)
-
-    # Stage 2+3: cluster + argument type + quality weight ordering
+    # Stage 2+3 collapsed into one ordered query: argument-type matches sort
+    # first (quality weight, then cosine distance within each group), so a
+    # single LIMIT gives the same result as "matches, topped up with
+    # non-matches" without a second round trip.
     if nearest_cluster is not None:
         base_query = (
             select(UserPost.id, UserPost.content)
             .where(UserPost.user_id == user_id, UserPost.cluster_id == nearest_cluster)
         )
 
+        order_by = []
         if input_arg_type:
-            type_result = await session.execute(
-                base_query
-                .where(UserPost.argument_type == input_arg_type)
-                .order_by(
-                    (UserPost.quality_weight * -1),
-                    UserPost.content_embedding.op("<=>")(input_embedding),
-                )
-                .limit(limit)
-            )
-            type_posts: list[tuple[str, str]] = [
-                (str(row[0]), row[1]) for row in type_result.fetchall()
-            ]
-            if len(type_posts) >= limit:
-                return [c for _, c in type_posts], [i for i, _ in type_posts]
+            order_by.append(case((UserPost.argument_type == input_arg_type, 0), else_=1))
+        order_by += [
+            (UserPost.quality_weight * -1),
+            UserPost.content_embedding.op("<=>")(input_embedding),
+        ]
 
-            # Top up from same cluster, different argument type
-            existing_contents = {c for _, c in type_posts}
-            fallback_result = await session.execute(
-                base_query
-                .where(UserPost.argument_type != input_arg_type)
-                .order_by(
-                    (UserPost.quality_weight * -1),
-                    UserPost.content_embedding.op("<=>")(input_embedding),
-                )
-                .limit((limit - len(type_posts)) + len(type_posts))
-            )
-            for row in fallback_result.fetchall():
-                if row[1] not in existing_contents and len(type_posts) < limit:
-                    type_posts.append((str(row[0]), row[1]))
-                    existing_contents.add(row[1])
-            if len(type_posts) >= limit:
-                return [c for _, c in type_posts[:limit]], [i for i, _ in type_posts[:limit]]
-        else:
-            cluster_result = await session.execute(
-                base_query
-                .order_by(
-                    (UserPost.quality_weight * -1),
-                    UserPost.content_embedding.op("<=>")(input_embedding),
-                )
-                .limit(limit)
-            )
-            cluster_posts: list[tuple[str, str]] = [
-                (str(row[0]), row[1]) for row in cluster_result.fetchall()
-            ]
-            if len(cluster_posts) >= limit:
-                return [c for _, c in cluster_posts], [i for i, _ in cluster_posts]
+        cluster_result = await session.execute(base_query.order_by(*order_by).limit(limit))
+        cluster_posts: list[tuple[str, str]] = [
+            (str(row[0]), row[1]) for row in cluster_result.fetchall()
+        ]
+        if len(cluster_posts) >= limit:
+            return [c for _, c in cluster_posts], [i for i, _ in cluster_posts]
 
     # Fallback: global quality-weighted similarity
     result = await session.execute(

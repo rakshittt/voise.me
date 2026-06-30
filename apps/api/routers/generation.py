@@ -34,7 +34,7 @@ from services.generation.edit_learner import (
     session_feedback_to_rules,
 )
 from services.generation.few_shot import get_similar_posts
-from services.generation.generator import VARIANTS, _generate_one, generate_variants
+from services.generation.generator import VARIANTS, _generate_one, generate_variants, strip_em_dashes
 from services.generation.prompt_builder import build_refine_system_prompt, build_repurpose_prompt
 from services.llm.router import llm_call
 from services.rate_limiter import check_rate_limit
@@ -230,7 +230,7 @@ async def repurpose(
         messages=[{"role": "user", "content": user_prompt}],
         max_tokens=800,
     )
-    content = response.content.strip()
+    content = strip_em_dashes(response.content.strip())
 
     score_result = await score_post(content, profile)
 
@@ -435,7 +435,7 @@ async def refine_variant(
         messages=[{"role": "user", "content": user_message}],
         max_tokens=600,
     )
-    refined = response.content.strip()
+    refined = strip_em_dashes(response.content.strip())
     score_result = await score_post(refined, profile)
 
     await log_usage(

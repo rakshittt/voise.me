@@ -4,12 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { TRIAL_EXTENDED_EVENT } from "@/lib/trialEvents";
 
-export function TrialBanner() {
-  const [daysLeft, setDaysLeft] = useState<number | null>(null);
+interface TrialBannerProps {
+  initialInTrial: boolean;
+  initialDaysLeft: number | null;
+}
+
+export function TrialBanner({ initialInTrial, initialDaysLeft }: TrialBannerProps) {
+  const [daysLeft, setDaysLeft] = useState<number | null>(initialInTrial ? initialDaysLeft : null);
   const [justExtended, setJustExtended] = useState(false);
 
   useEffect(() => {
-    const fetchSummary = () =>
+    // Initial value comes from the server (layout already fetched it) - only
+    // re-fetch here when the trial is actually extended client-side.
+    const onTrialExtended = () => {
+      setJustExtended(true);
       fetch("/api/usage")
         .then((r) => r.json())
         .then((d) => {
@@ -18,12 +26,6 @@ export function TrialBanner() {
           }
         })
         .catch(() => {});
-
-    fetchSummary();
-
-    const onTrialExtended = () => {
-      setJustExtended(true);
-      fetchSummary();
       setTimeout(() => setJustExtended(false), 4000);
     };
     window.addEventListener(TRIAL_EXTENDED_EVENT, onTrialExtended);

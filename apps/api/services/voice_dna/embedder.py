@@ -12,7 +12,10 @@ logger = logging.getLogger(__name__)
 
 EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIM = 1536
-BATCH_SIZE = 20
+# OpenAI's embeddings endpoint accepts up to 2048 inputs/request; 150 keeps
+# comfortable headroom under the per-request token limit for long posts
+# while cutting round trips ~7x versus the previous batch of 20.
+BATCH_SIZE = 150
 
 
 async def _embed_batch(texts: list[str]) -> list[list[float]]:

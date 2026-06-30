@@ -30,7 +30,7 @@ from schemas.voice_profile import (
 )
 from services.cache.voice_profile_cache import (
     get_cached_profile,
-    get_cached_status,
+    get_cached_status_and_profile,
     invalidate_profile_cache,
     set_cached_profile,
 )
@@ -282,19 +282,16 @@ async def get_profile_status(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> VoiceProfileStatusResponse:
-    # Fast path: status-only cache (15s TTL, safe for 3s polling)
-    cached_status = await get_cached_status(user.id)
-    if cached_status is not None:
-        # Status cache hit - still need full profile fields for the response
-        cached_profile = await get_cached_profile(user.id)
-        if cached_profile is not None:
-            return VoiceProfileStatusResponse(
-                status=cached_profile.status,
-                confidence_level=cached_profile.confidence_level,
-                post_count=cached_profile.post_count,
-                last_built_at=cached_profile.last_built_at,
-                profile_type=cached_profile.profile_type,
-            )
+    # Fast path: status (15s TTL, safe for 3s polling) + profile in one round trip
+    cached_status, cached_profile = await get_cached_status_and_profile(user.id)
+    if cached_status is not None and cached_profile is not None:
+        return VoiceProfileStatusResponse(
+            status=cached_profile.status,
+            confidence_level=cached_profile.confidence_level,
+            post_count=cached_profile.post_count,
+            last_built_at=cached_profile.last_built_at,
+            profile_type=cached_profile.profile_type,
+        )
 
     result = await session.execute(select(VoiceProfile).where(VoiceProfile.user_id == user.id))
     profile = result.scalar_one_or_none()

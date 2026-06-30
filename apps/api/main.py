@@ -33,14 +33,23 @@ async def lifespan(app: FastAPI):
     await close_redis()
 
 
-app = FastAPI(title="Voise API", version="0.1.0", lifespan=lifespan)
+_is_production = settings.ENVIRONMENT == "production"
+
+app = FastAPI(
+    title="Voise API",
+    version="0.1.0",
+    lifespan=lifespan,
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 app.include_router(account_router)

@@ -5,6 +5,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     DATABASE_URL: str
+    DB_POOL_SIZE: int = 20
+    DB_MAX_OVERFLOW: int = 10
     ANTHROPIC_API_KEY: str
     OPENAI_API_KEY: str
     CLERK_SECRET_KEY: str
@@ -30,6 +32,11 @@ class Settings(BaseSettings):
     TRIAL_BASE_DAYS: int = 15
     TRIAL_MAX_DAYS: int = 30
     APP_URL: str = "http://localhost:3000"
+    # Comma-separated list of origins allowed to call this API with credentials.
+    # Browsers never call FastAPI directly in this architecture (Next.js
+    # proxies all requests server-side), so this mainly guards against future
+    # direct-from-browser usage - keep it in sync with deployed frontend URLs.
+    ALLOWED_ORIGINS: str = "http://localhost:3000"
 
     LOG_PROMPTS: bool = False
     ENVIRONMENT: str = "development"
@@ -41,6 +48,10 @@ class Settings(BaseSettings):
     GPT4O_OUTPUT_PRICE: float = 10.0
     GPT4O_MINI_INPUT_PRICE: float = 0.15
     GPT4O_MINI_OUTPUT_PRICE: float = 0.60
+
+    @property
+    def allowed_origins_list(self) -> list[str]:
+        return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
 
     def calculate_cost(self, model: str, input_tokens: int, output_tokens: int) -> float:
         pricing = {

@@ -6,9 +6,11 @@ Pipeline per variant:
   3. If score < REFINE_THRESHOLD, build specific critique and regenerate once
   4. Return the better of the two attempts
 """
+import asyncio
 import hashlib
 import json
 import logging
+import re
 import uuid
 from dataclasses import dataclass
 
@@ -31,6 +33,17 @@ logger = logging.getLogger(__name__)
 
 VARIANTS: list[VariantType] = ["A", "B", "C"]
 REFINE_THRESHOLD = 85  # score below this triggers one refinement attempt
+
+_EM_DASH_RE = re.compile(r"\s*[—–]\s*")
+
+
+def strip_em_dashes(text: str) -> str:
+    """Replace em/en dashes with a plain hyphen.
+
+    The prompt already says "never use em dashes," but LLMs ignore that
+    instruction often enough that it needs enforcing post-generation too.
+    """
+    return _EM_DASH_RE.sub(" - ", text)
 
 
 @dataclass
@@ -72,7 +85,7 @@ async def _generate_one(
         messages=messages,
         max_tokens=600,
     )
-    content = response.content.strip()
+    content = strip_em_dashes(response.content.strip())
     return GeneratedVariant(
         content=content,
         variant_type=variant,
@@ -88,7 +101,10 @@ async def _synthesize_exemplars(few_shots: list[str]) -> str:
     Returns a compact pattern summary injected into the generation prompt.
     On failure returns empty string - generation continues without synthesis.
     """
-    if not few_shots:
+    # "Patterns ALL of them share" isn't a meaningful question with fewer than
+    # 2 examples - skip the LLM call entirely rather than pay its latency for
+    # an empty/degenerate result (common for users with sparse post history).
+    if len(few_shots) < 2:
         return ""
     combined = "\n\n---\n\n".join(f"POST {i + 1}:\n{p[:600]}" for i, p in enumerate(few_shots))
     prompt = (
@@ -237,16 +253,21 @@ async def generate_variants(
     if exemplar_synthesis:
         logger.info(f"Exemplar synthesis produced {len(exemplar_synthesis)} chars")
 
-    # Generate 3 variants sequentially to avoid rate limit bursts
-    variants: list[GeneratedVariant] = []
-    scores: list[VoiceMatchResult] = []
-    for variant_type in VARIANTS:
-        v, s = await _generate_with_refinement(
+    # Generate the 3 variants in parallel. Each variant is its own
+    # generate->score->(maybe refine) pipeline, independent of the others, so
+    # there's no correctness reason to serialize them. This triples the
+    # instantaneous LLM call burst per request (was: 1 at a time, now: up to 3),
+    # which is fine within current provider rate-limit tiers but worth
+    # re-checking if those tiers are tight.
+    results = await asyncio.gather(*[
+        _generate_with_refinement(
             profile, few_shots, variant_type, idea_text, edit_rules,
             exemplar_synthesis=exemplar_synthesis, creator_context=creator_context,
         )
-        variants.append(v)
-        scores.append(s)
+        for variant_type in VARIANTS
+    ])
+    variants = [v for v, _ in results]
+    scores = [s for _, s in results]
 
     context_snapshot = _build_context_snapshot(profile, few_shot_ids, edit_rules)
     return variants, scores, input_embedding, context_snapshot
@@ -258,11 +279,14 @@ async def _gather_context(
     idea_text: str,
     session: AsyncSession,
 ) -> tuple[list[str], list[str], list[dict]]:
-    import asyncio
-
-    few_shots_coro = get_similar_posts(
+    # Sequential, not gathered: both calls execute on the same shared
+    # AsyncSession, which raises InvalidRequestError ("concurrent operations
+    # are not permitted") if two coroutines call execute() on it at once -
+    # confirmed live against this app's DB, not theoretical. edit_rules is
+    # usually a Redis cache hit (no DB touch at all), so this is cheap in the
+    # common case.
+    few_shots, few_shot_ids = await get_similar_posts(
         user_id, input_embedding, limit=3, session=session, input_text=idea_text
     )
-    edit_rules_coro = get_edit_rules_for_prompt(user_id, session)
-    (few_shots, few_shot_ids), edit_rules = await asyncio.gather(few_shots_coro, edit_rules_coro)
+    edit_rules = await get_edit_rules_for_prompt(user_id, session)
     return few_shots, few_shot_ids, edit_rules

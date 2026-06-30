@@ -1,8 +1,12 @@
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TrialBanner } from "@/components/dashboard/TrialBanner";
 import { OnboardingGuard } from "./dashboard/onboarding-guard";
+import { getUsageSummary } from "@/lib/server-data";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  // Deduped via React cache() - the page below reuses this same fetch.
+  const usage = await getUsageSummary();
+
   return (
     <div
       style={{
@@ -38,7 +42,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </header>
 
         {/* Trial banner (renders when in trial) */}
-        <TrialBanner />
+        <TrialBanner
+          initialInTrial={usage?.in_trial ?? false}
+          initialDaysLeft={usage?.in_trial ? usage.trial_days_remaining : null}
+        />
 
         {/* Page content */}
         <main
