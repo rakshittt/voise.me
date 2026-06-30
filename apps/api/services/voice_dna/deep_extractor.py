@@ -12,7 +12,7 @@ import logging
 import re
 from collections import Counter
 
-from services.llm.router import llm_call
+from services.llm.router import llm_call, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ async def _extract_json_safe(task: str, prompt: str) -> dict | list:
         max_tokens=1200,
     )
     try:
-        return json.loads(response.content)
+        return parse_json_response(response.content)
     except json.JSONDecodeError as e:
         logger.error(f"JSON parse failed for {task}: {e}\nRaw: {response.content[:200]}")
         return {}
@@ -223,19 +223,15 @@ Return ONLY valid JSON:
     }
 
 
-async def classify_argument_types(posts: list[str]) -> list[str]:
-    """Classify each post into one of 6 argument types. Returns list parallel to posts."""
-    VALID_TYPES = {
-        "story_lesson", "list_format", "contrarian_claim_evidence",
-        "how_to", "observation_question", "problem_insight_proof",
-    }
-    BATCH = 15
-    all_types: list[str] = []
+_ARG_TYPE_VALID_TYPES = {
+    "story_lesson", "list_format", "contrarian_claim_evidence",
+    "how_to", "observation_question", "problem_insight_proof",
+}
 
-    for i in range(0, len(posts), BATCH):
-        batch = posts[i : i + BATCH]
-        items = json.dumps([{"index": j, "text": p[:400]} for j, p in enumerate(batch)], ensure_ascii=False)
-        prompt = f"""Classify each LinkedIn post into exactly one structural type:
+
+async def _classify_batch(batch: list[str], batch_label: str) -> list[str]:
+    items = json.dumps([{"index": j, "text": p[:400]} for j, p in enumerate(batch)], ensure_ascii=False)
+    prompt = f"""Classify each LinkedIn post into exactly one structural type:
 - story_lesson: tells a story then draws a lesson
 - list_format: main structure is a list (numbered or bulleted)
 - contrarian_claim_evidence: makes contrarian claim then proves it
@@ -249,16 +245,31 @@ Posts:
 Return ONLY valid JSON:
 {{"classifications": ["type_for_index_0", "type_for_index_1", ...]}}"""
 
-        result = await _extract_json_safe(f"arg_type_batch_{i}", prompt)
-        types = result.get("classifications", []) if isinstance(result, dict) else []
+    result = await _extract_json_safe(batch_label, prompt)
+    raw_types = result.get("classifications", []) if isinstance(result, dict) else []
 
-        for t in types:
-            all_types.append(t if t in VALID_TYPES else "problem_insight_proof")
+    types = [t if t in _ARG_TYPE_VALID_TYPES else "problem_insight_proof" for t in raw_types]
+    # Pad if LLM returned fewer than batch size
+    while len(types) < len(batch):
+        types.append("problem_insight_proof")
+    return types[: len(batch)]
 
-        # Pad if LLM returned fewer than batch size
-        while len(all_types) < i + len(batch):
-            all_types.append("problem_insight_proof")
 
+async def classify_argument_types(posts: list[str]) -> list[str]:
+    """Classify each post into one of 6 argument types. Returns list parallel to posts.
+
+    Batches of 15 run concurrently instead of sequentially - for a 50-200
+    post LinkedIn import (the recommended onboarding path), this was 4-14
+    sequential LLM round trips and the dominant latency cost of the whole
+    voice DNA build, since every other extraction stage is already a single
+    parallel batch.
+    """
+    BATCH = 15
+    batches = [posts[i : i + BATCH] for i in range(0, len(posts), BATCH)]
+    results = await asyncio.gather(
+        *[_classify_batch(batch, f"arg_type_batch_{i * BATCH}") for i, batch in enumerate(batches)]
+    )
+    all_types = [t for batch_types in results for t in batch_types]
     return all_types[: len(posts)]
 
 

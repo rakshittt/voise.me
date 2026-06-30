@@ -11,7 +11,7 @@ import logging
 
 from models.voice_profile import VoiceProfile
 from services.ideas.context_builder import IdeaContext
-from services.llm.router import llm_call
+from services.llm.router import llm_call, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +152,7 @@ def _build_prompt(profile: VoiceProfile, context: IdeaContext) -> str:
 
 def _parse_candidates(content: str) -> list[RawCandidate]:
     try:
-        raw = json.loads(content)
+        raw = parse_json_response(content)
         items = raw.get("ideas", [])
     except (json.JSONDecodeError, TypeError) as e:
         logger.error("Failed to parse candidate JSON: %s", e)

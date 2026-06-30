@@ -161,13 +161,21 @@ const INSIGHT_MESSAGES = [
   "Almost done - finalising your fingerprint…",
 ];
 
-export function BuildProfileForm() {
+interface BuildProfileFormProps {
+  /** Set when the server already sees a build in progress (e.g. user
+   * navigated back here mid-build) - resumes the polling view immediately
+   * instead of showing the source selector and risking a duplicate submit. */
+  resumeBuilding?: boolean;
+  initialPostCount?: number;
+}
+
+export function BuildProfileForm({ resumeBuilding, initialPostCount }: BuildProfileFormProps = {}) {
   const router = useRouter();
   const [handoffPrefill] = useState(() => computeHandoffPrefill());
   const [mode, setMode] = useState<Mode>(() => (handoffPrefill.value ? "text_paste" : "select"));
-  const [postCount, setPostCount] = useState(0);
-  const [polling, setPolling] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [postCount, setPostCount] = useState(initialPostCount ?? 0);
+  const [polling, setPolling] = useState(!!resumeBuilding);
+  const [progress, setProgress] = useState(() => (resumeBuilding ? 10 : 0));
   const [insightIdx, setInsightIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -184,40 +192,55 @@ export function BuildProfileForm() {
     }
   }, []);
 
+  // Sets up the polling intervals only - no synchronous state writes, so
+  // this is safe to call from an effect body as well as an event handler.
+  const runPollingIntervals = useCallback(() => {
+    insightRef.current = setInterval(() => {
+      setInsightIdx((i) => (i + 1) % INSIGHT_MESSAGES.length);
+    }, 2200);
+
+    pollRef.current = setInterval(async () => {
+      setProgress((p) => Math.min(p + Math.random() * 6, 90));
+      try {
+        const res = await fetch("/api/voice-profile/status");
+        const data: BuildStatus = await res.json();
+        if (data.status === "ready") {
+          setProgress(100);
+          stopPolling();
+          setPolling(false);
+          router.push("/onboarding/your-dna");
+        } else if (data.status === "failed") {
+          stopPolling();
+          setPolling(false);
+          setError("Voice DNA build failed. Please try again.");
+        }
+      } catch {
+        // Network hiccup - keep polling
+      }
+    }, 3000);
+  }, [router, stopPolling]);
+
   const startPolling = useCallback(
     (count: number) => {
       setPolling(true);
       setPostCount(count);
       setProgress(10);
       setInsightIdx(0);
-      insightRef.current = setInterval(() => {
-        setInsightIdx((i) => (i + 1) % INSIGHT_MESSAGES.length);
-      }, 2200);
-
-      pollRef.current = setInterval(async () => {
-        setProgress((p) => Math.min(p + Math.random() * 6, 90));
-        try {
-          const res = await fetch("/api/voice-profile/status");
-          const data: BuildStatus = await res.json();
-          if (data.status === "ready") {
-            setProgress(100);
-            stopPolling();
-            setPolling(false);
-            router.push("/onboarding/your-dna");
-          } else if (data.status === "failed") {
-            stopPolling();
-            setPolling(false);
-            setError("Voice DNA build failed. Please try again.");
-          }
-        } catch {
-          // Network hiccup - keep polling
-        }
-      }, 3000);
+      runPollingIntervals();
     },
-    [router, stopPolling]
+    [runPollingIntervals]
   );
 
   useEffect(() => () => { stopPolling(); }, [stopPolling]);
+
+  // Resume case: state already reflects "polling" via lazy initializers
+  // above, this effect only needs to start the actual intervals.
+  useEffect(() => {
+    if (resumeBuilding) {
+      runPollingIntervals();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => { clearToolHandoff(); }, []);
 

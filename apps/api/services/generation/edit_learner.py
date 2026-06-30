@@ -19,7 +19,7 @@ from models.post_edit_event import PostEditEvent
 from models.user_post import UserPost
 from services.cache.client import get_redis
 from services.cache.keys import edit_rules_key
-from services.llm.router import llm_call
+from services.llm.router import llm_call, parse_json_response
 from services.voice_dna.embedder import embed_text
 
 logger = logging.getLogger(__name__)
@@ -99,7 +99,7 @@ If the edits are minor or cosmetic (typo fixes, minor rephrasing), return an emp
         max_tokens=600,
     )
     try:
-        result = json.loads(response.content)
+        result = parse_json_response(response.content)
         if isinstance(result, list):
             return result[:5]
         if isinstance(result, dict) and "rules" in result:

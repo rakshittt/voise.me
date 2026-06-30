@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Show } from "@clerk/nextjs";
 import { VoiseLogo } from "@/components/ui/VoiseLogo";
 
 const LINKS = [
@@ -37,26 +38,41 @@ export function MarketingNav() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "var(--ds-space-100)" }}>
-          <Link href="/sign-in" style={{
-            color: "var(--ds-text-subtle)",
-            fontSize: "var(--ds-font-size-100)",
-            fontWeight: "var(--ds-font-weight-medium)",
-            padding: "6px 12px",
-            textDecoration: "none",
-          }}>
-            Sign in
-          </Link>
-          <Link href="/sign-up" style={{
-            backgroundColor: "var(--ds-background-brand-bold)",
-            color: "var(--ds-text-inverse)",
-            fontSize: "var(--ds-font-size-100)",
-            fontWeight: "var(--ds-font-weight-bold)",
-            padding: "7px 16px",
-            borderRadius: "var(--ds-radius-200)",
-            textDecoration: "none",
-          }}>
-            Get started free
-          </Link>
+          <Show when="signed-out">
+            <Link href="/sign-in" style={{
+              color: "var(--ds-text-subtle)",
+              fontSize: "var(--ds-font-size-100)",
+              fontWeight: "var(--ds-font-weight-medium)",
+              padding: "6px 12px",
+              textDecoration: "none",
+            }}>
+              Sign in
+            </Link>
+            <Link href="/sign-up" style={{
+              backgroundColor: "var(--ds-background-brand-bold)",
+              color: "var(--ds-text-inverse)",
+              fontSize: "var(--ds-font-size-100)",
+              fontWeight: "var(--ds-font-weight-bold)",
+              padding: "7px 16px",
+              borderRadius: "var(--ds-radius-200)",
+              textDecoration: "none",
+            }}>
+              Get started free
+            </Link>
+          </Show>
+          <Show when="signed-in">
+            <Link href="/dashboard" style={{
+              backgroundColor: "var(--ds-background-brand-bold)",
+              color: "var(--ds-text-inverse)",
+              fontSize: "var(--ds-font-size-100)",
+              fontWeight: "var(--ds-font-weight-bold)",
+              padding: "7px 16px",
+              borderRadius: "var(--ds-radius-200)",
+              textDecoration: "none",
+            }}>
+              Dashboard
+            </Link>
+          </Show>
         </div>
       </div>
     </nav>

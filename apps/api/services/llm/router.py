@@ -1,4 +1,6 @@
+import json
 import logging
+import re
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -8,6 +10,20 @@ import openai
 from config import settings
 
 logger = logging.getLogger(__name__)
+
+_MARKDOWN_FENCE_RE = re.compile(r"^```(?:json)?\s*\n?|\n?```\s*$", re.MULTILINE)
+
+
+def parse_json_response(content: str) -> dict | list:
+    """Parse an LLM response as JSON, tolerating markdown code fences.
+
+    Despite json_mode=True / explicit "return only JSON" instructions, models
+    sometimes still wrap the response in ```json ... ``` fences. Strip those
+    before parsing instead of letting them cause a silent extraction failure.
+    Raises json.JSONDecodeError on genuinely malformed content - callers are
+    expected to catch and handle that themselves.
+    """
+    return json.loads(_MARKDOWN_FENCE_RE.sub("", content.strip()))
 
 # Task → (primary model, fallback model)
 # Matches CLAUDE.md spec exactly

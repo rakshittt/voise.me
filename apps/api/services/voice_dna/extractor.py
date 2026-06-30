@@ -5,7 +5,7 @@ import random
 import re
 from statistics import mean, stdev
 
-from services.llm.router import llm_call
+from services.llm.router import llm_call, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def _posts_to_json(posts: list[str]) -> str:
 async def _extract_json(task: str, prompt: str) -> dict:
     response = await llm_call(task="extraction", messages=[{"role": "user", "content": prompt}], json_mode=True)
     try:
-        return json.loads(response.content)
+        return parse_json_response(response.content)
     except json.JSONDecodeError as e:
         logger.error(f"JSON parse failed for {task}: {e}\nRaw: {response.content[:200]}")
         return {}

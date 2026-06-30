@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from models.voice_profile import VoiceProfile
-from services.llm.router import llm_call
+from services.llm.router import llm_call, parse_json_response
 from services.stylometrics.divergence import mtld_delta_score as _mtld_delta
 from services.stylometrics.divergence import pos_jsd_score as _pos_jsd
 from services.stylometrics.features import compute_mtld, compute_pos_distribution
@@ -245,7 +245,7 @@ POST:
         json_mode=True,
     )
     try:
-        return json.loads(response.content)
+        return parse_json_response(response.content)
     except json.JSONDecodeError:
         logger.error(f"Classification parse failed: {response.content[:200]}")
         return {}

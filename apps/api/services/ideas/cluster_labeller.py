@@ -1,5 +1,4 @@
 """Label content pillar clusters with semantic topic strings."""
-import json
 import logging
 import uuid
 
@@ -9,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from models.user_post import UserPost
 from models.voice_profile import VoiceProfile
 from services.cache.voice_profile_cache import set_cached_profile
-from services.llm.router import llm_call
+from services.llm.router import llm_call, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +78,7 @@ async def label_clusters(
             max_tokens=200,
             json_mode=True,
         )
-        raw = json.loads(response.content)
+        raw = parse_json_response(response.content)
         labels = {str(cid): v for cid, v in raw.items() if isinstance(v, str)}
         return labels
     except Exception as e:

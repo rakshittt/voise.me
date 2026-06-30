@@ -12,6 +12,7 @@ import {
   type Variants,
 } from "framer-motion";
 import Link from "next/link";
+import { Show } from "@clerk/nextjs";
 import {
   Clock, Bot, RefreshCw, ArrowRight, Check,
   BarChart3, Zap, MessageSquare, History, ChevronDown,
@@ -417,14 +418,22 @@ function Nav() {
 
         {/* Right side */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Link href="/sign-in" className="nav-signin"
-            style={{ fontFamily: FONT.body, fontSize: 14, color: C.muted, textDecoration: "none" }}>
-            Sign in
-          </Link>
-          <Link href="/sign-up"
-            style={{ fontFamily: FONT.body, fontSize: 13, fontWeight: 500, backgroundColor: C.ink, color: "#fff", padding: "7px 18px", borderRadius: 32, textDecoration: "none" }}>
-            Get started
-          </Link>
+          <Show when="signed-out">
+            <Link href="/sign-in" className="nav-signin"
+              style={{ fontFamily: FONT.body, fontSize: 14, color: C.muted, textDecoration: "none" }}>
+              Sign in
+            </Link>
+            <Link href="/sign-up"
+              style={{ fontFamily: FONT.body, fontSize: 13, fontWeight: 500, backgroundColor: C.ink, color: "#fff", padding: "7px 18px", borderRadius: 32, textDecoration: "none" }}>
+              Get started
+            </Link>
+          </Show>
+          <Show when="signed-in">
+            <Link href="/dashboard"
+              style={{ fontFamily: FONT.body, fontSize: 13, fontWeight: 500, backgroundColor: C.ink, color: "#fff", padding: "7px 18px", borderRadius: 32, textDecoration: "none" }}>
+              Dashboard
+            </Link>
+          </Show>
           {/* Hamburger - shown only on mobile via CSS */}
           <button
             className="nav-burger"
@@ -448,12 +457,24 @@ function Nav() {
             style={{ overflow: "hidden", borderTop: `1px solid ${C.hairline}`, backgroundColor: C.canvas }}
           >
             <div style={{ padding: "4px 24px 16px", display: "flex", flexDirection: "column" }}>
-              {[...NAV_LINKS, ["Sign in", "/sign-in"] as [string, string]].map(([label, href]) => (
+              {NAV_LINKS.map(([label, href]) => (
                 <Link key={href} href={href} onClick={() => setMobileOpen(false)}
                   style={{ fontFamily: FONT.body, fontSize: 15, color: C.text, padding: "13px 0", textDecoration: "none", borderBottom: `1px solid ${C.hairline}`, display: "block" }}>
                   {label}
                 </Link>
               ))}
+              <Show when="signed-out">
+                <Link href="/sign-in" onClick={() => setMobileOpen(false)}
+                  style={{ fontFamily: FONT.body, fontSize: 15, color: C.text, padding: "13px 0", textDecoration: "none", borderBottom: `1px solid ${C.hairline}`, display: "block" }}>
+                  Sign in
+                </Link>
+              </Show>
+              <Show when="signed-in">
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)}
+                  style={{ fontFamily: FONT.body, fontSize: 15, color: C.text, padding: "13px 0", textDecoration: "none", borderBottom: `1px solid ${C.hairline}`, display: "block" }}>
+                  Dashboard
+                </Link>
+              </Show>
             </div>
           </motion.div>
         )}

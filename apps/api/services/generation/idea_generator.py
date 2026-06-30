@@ -9,7 +9,7 @@ from services.generation.prompt_builder import (
     PERSONA_DESCRIPTIONS,
     _dominant_key,
 )
-from services.llm.router import LLMResponse, llm_call
+from services.llm.router import LLMResponse, llm_call, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +130,7 @@ async def generate_recommended_ideas(
     )
 
     try:
-        raw = json.loads(response.content)
+        raw = parse_json_response(response.content)
         ideas_data = raw.get("ideas", [])
         ideas = [
             IdeaItem(
@@ -170,7 +170,7 @@ async def generate_ideas(
     )
 
     try:
-        raw = json.loads(response.content)
+        raw = parse_json_response(response.content)
         ideas_data = raw.get("ideas", [])
         ideas = [
             IdeaItem(

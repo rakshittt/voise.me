@@ -2,10 +2,9 @@
 
 Detects if a candidate post contradicts any of the user's known stances.
 """
-import json
 import logging
 
-from services.llm.router import llm_call
+from services.llm.router import llm_call, parse_json_response
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ or
             json_mode=True,
             max_tokens=100,
         )
-        result = json.loads(response.content)
+        result = parse_json_response(response.content)
         if result.get("contradicts"):
             return False, result.get("issue", "Contradicts a known stance")
         return True, None

@@ -323,8 +323,9 @@ async def get_profile(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No voice profile found.")
         await set_cached_profile(profile)
 
-    if not profile.hook_distribution:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No voice profile found.")
+    # hook_distribution is intentionally NULL for seed profiles (see
+    # build_seed_profile docstring) - it is not a signal of "no profile".
+    # The only real "not found" condition is no row existing at all, above.
 
     return VoiceProfileResponse(
         id=profile.id,
